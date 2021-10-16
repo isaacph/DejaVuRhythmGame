@@ -12,4 +12,12 @@ public class MathUtil {
         return pointInside(point.x, center.x - scale.x / 2, center.x + scale.x / 2) &&
                 pointInside(point.y, center.y - scale.y / 2, center.y + scale.y / 2);
     }
+
+    public static int roundDown(double val) {
+        if(val < 0) {
+            return (int) (val) - 1;
+        } else {
+            return (int) val;
+        }
+    }
 }

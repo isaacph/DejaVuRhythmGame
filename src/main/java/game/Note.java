@@ -10,9 +10,13 @@ public class Note implements Comparable<Note> {
     // so 3.0f is the 4th note
     public final float timeInMeasure;
 
-    public Note(float timeInMeasure, int position) {
+    // time when this note should be hit, in 4/4 beats after timeInMeasure
+    public final float hitTime;
+
+    public Note(float timeInMeasure, float hitTime, int position) {
         this.timeInMeasure = timeInMeasure;
         this.position = position;
+        this.hitTime = hitTime;
     }
 
     @Override

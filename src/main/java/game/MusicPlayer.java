@@ -29,20 +29,30 @@ public class MusicPlayer {
             new Vector2f(50, 100),
             new Vector2f(100, 100),
     };
-    private ArrayList<Note> noteInfo = new ArrayList<>();
 
-    public double bpm = 100.0;
+    public ArrayList<MeasureInfo> measuresToPlay = new ArrayList<>();
+    public double currentMeasure;
 
-    public double musicTime = -3.0f;
-    private int noteInfoPos = 0;
+    public double bpm = 120.0;
+
+    public int noteInfoPos = 0;
     public ArrayList<Note> activeNotes = new ArrayList<>();
-    private Map<Note, Float> playMusicTime = new HashMap<>();
+    public Map<Note, Float> playMusicTime = new HashMap<>();
 
     public int goodness = 0;
 
     public boolean keyDown = false;
 
     public boolean show = true;
+
+    public final Map<String, SoundHandle> sounds = new HashMap<>();
+
+    public static final int[] MELODY_NUMBERS = {1};
+    public static final String[] RHYTHM_NAMES = {"A"};
+
+    public int counter = 0;
+
+    public SoundHandle hitSound;
 
     public MusicPlayer(Game game) {
         this.game = game;
@@ -51,49 +61,73 @@ public class MusicPlayer {
             notePosition.put(i + 1, notePos[i]);
         }
 
-        noteInfo = new ArrayList<>();
-        noteInfo.add(new Note(0.0f, 1));
-        noteInfo.add(new Note(0.5f, 2));
-        noteInfo.add(new Note(1.0f, 3));
-        noteInfo.add(new Note(1.5f, 4));
-        noteInfo.add(new Note(2.0f, 5));
-        noteInfo.add(new Note(2.5f, 6));
-        noteInfo.add(new Note(3.0f, 7));
-        noteInfo.add(new Note(3.5f, 8));
-        Collections.sort(noteInfo);
+        {
+            WaitMeasure measure = new WaitMeasure();
+            measuresToPlay.add(measure);
+        }
+        {
+            GameplayMeasure measure = new GameplayMeasure();
+            measure.startingSounds.add("A");
+            measure.startingSounds.add("1A");
+            measure.noteInfo.add(new Note(0.0f, 4.0f, 1));
+            measure.noteInfo.add(new Note(0.5f, 4.0f, 2));
+            measure.noteInfo.add(new Note(1.0f, 4.0f, 3));
+            measure.noteInfo.add(new Note(1.5f, 4.0f, 4));
+            measure.noteInfo.add(new Note(2.0f, 4.0f, 5));
+            measure.noteInfo.add(new Note(2.5f, 4.0f, 6));
+            measure.noteInfo.add(new Note(3.0f, 4.0f, 7));
+            measure.noteInfo.add(new Note(3.5f, 4.0f, 8));
+            Collections.sort(measure.noteInfo);
+            measuresToPlay.add(measure);
+        }
+        {
+            GameplayMeasure measure = new GameplayMeasure();
+            measure.startingSounds.add("A");
+            measure.startingSounds.add("1A");
+            measuresToPlay.add(measure);
+        }
+
+        hitSound = game.soundPlayer.loadSound("");
+
+        for(String rhythm : RHYTHM_NAMES) {
+            sounds.put(rhythm, game.soundPlayer.loadSound("music/Rhythm_" + rhythm + ".ogg"));
+            for(int melody : MELODY_NUMBERS) {
+                sounds.put(melody + rhythm, game.soundPlayer.loadSound("music/Melody_" + melody + rhythm + ".ogg"));
+            }
+        }
+
+        currentMeasure = 0;
     }
 
     public void update() {
         if(!show) return;
 
-        musicTime += game.delta * bpm / 60.0;
+        int prevMeasure = MathUtil.roundDown(currentMeasure);
+        currentMeasure += game.delta * bpm / 60.0 / 4.0f;
+        int measureIndex = MathUtil.roundDown(currentMeasure);
+        for(int mI = Math.max(0, prevMeasure); mI <= Math.min(measuresToPlay.size() - 1, measureIndex); ++mI) {
+            MeasureInfo measure = measuresToPlay.get(mI);
 
-        boolean added = true;
-        while(added && noteInfoPos < noteInfo.size()) {
-            added = false;
-            Note note = noteInfo.get(noteInfoPos);
-            if(musicTime >= note.timeInMeasure) {
-                activeNotes.add(note);
-                playMusicTime.put(note, note.timeInMeasure + 4);
-                noteInfoPos++;
-                added = true;
+            if(mI > prevMeasure) {
+                measure.measureStart(game, mI);
+            } else if(mI == measureIndex) {
+                measure.measureUpdate(game);
+            } else { //if(mI < measureIndex) {
+                measure.measureEnd(game);
             }
-        }
-
-        for(Note note : activeNotes) {
-
         }
 
         if(glfwGetKey(game.window, GLFW_KEY_SPACE) == GLFW_PRESS) {
             if(!keyDown) {
                 if (!activeNotes.isEmpty()) {
                     Note note = activeNotes.remove(0);
-                    double diff = (playMusicTime.get(note) - musicTime) / bpm * 60.0;
+                    double diff = (playMusicTime.get(note) - currentMeasure) / bpm * 60.0;
                     if (Math.abs(diff) < 0.2) {
                         goodness = 2;
                     } else {
                         goodness = 1;
                     }
+                    System.out.println("Hit note with diff " + diff);
                 }
             }
         }
@@ -112,13 +146,13 @@ public class MusicPlayer {
 
         Vector4f col = new Vector4f(1.0f, 1.0f, 1.0f, 1.0f);
         if(goodness == 1) {
-            col = new Vector4f(1.0f, 0.0f, 0.0f, 1.0f);
+            col.set(1.0f, 0.0f, 0.0f, 1.0f);
         } else if(goodness == 2) {
-            col = new Vector4f(0.0f, 1.0f, 0.0f, 1.0f);
+            col.set(0.0f, 1.0f, 0.0f, 1.0f);
         }
 
         // draw goodness
-        game.drawSimple.draw(new Matrix4f(game.ortho).translate(game.screenSize.x / 2.0f, 80, 0).scale(100), col);
+        game.mainFont.draw("Test: " + goodness, 100, 100, new Matrix4f(game.ortho));
     }
 
     public void translateToScreen(Vector2f pos) {

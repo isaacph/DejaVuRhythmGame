@@ -112,7 +112,6 @@ public class Game {
         enemyTexture = Texture.makeTexture("sprites/enemy_1.png");
 
         soundPlayer = new SoundPlayer();
-        testSound = soundPlayer.loadSound("");
 
         musicPlayer = new MusicPlayer(this);
         playButton = new MenuButton(this, new Vector2f(0), new Vector2f(200, 100), "Button");
@@ -151,7 +150,7 @@ public class Game {
             musicPlayer.update();
             playButton.update();
 
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear the framebuffer
+            glClear(GL_COLOR_BUFFER_BIT); // clear the framebuffer
 
             if(musicPlayer.show) {
                 boardTexture.bind();

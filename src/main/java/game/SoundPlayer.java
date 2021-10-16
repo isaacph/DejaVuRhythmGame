@@ -2,21 +2,17 @@ package game;
 
 import org.lwjgl.openal.*;
 import org.lwjgl.system.MemoryStack;
-import org.lwjgl.system.MemoryUtil;
 
-import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
-import java.nio.channels.Channels;
-import java.nio.channels.ReadableByteChannel;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.lwjgl.glfw.GLFW.glfwGetTime;
 import static org.lwjgl.openal.AL10.*;
 import static org.lwjgl.openal.ALC10.*;
 import static org.lwjgl.stb.STBVorbis.stb_vorbis_decode_memory;
-import static org.lwjgl.system.MemoryStack.*;
 import static org.lwjgl.system.libc.LibCStdlib.free;
 
 
@@ -35,7 +31,7 @@ public class SoundPlayer {
     private final Map<SoundHandle, SoundInfo> sounds = new HashMap<>();
 
     private final int[] sources = new int[100];
-    private final float[] sourceStart = new float[sources.length];
+    private final float[] sourceEnd = new float[sources.length];
 
     public SoundPlayer() {
 
@@ -53,8 +49,8 @@ public class SoundPlayer {
         AL.createCapabilities(deviceCaps);
 
         alGenSources(sources);
-        for(int i = 0; i < sourceStart.length; ++i) {
-            sourceStart[i] = 0;
+        for(int i = 0; i < sourceEnd.length; ++i) {
+            sourceEnd[i] = 0;
         }
     }
 
@@ -63,14 +59,16 @@ public class SoundPlayer {
         float minSourceTime = -1;
 
         for(int i = 0; i < sources.length; ++i) {
-            if(minSourceTime > sourceStart[i]) {
-                minSourceTime = sourceStart[i];
+            if(minSourceTime > sourceEnd[i]) {
+                minSourceTime = sourceEnd[i];
                 minSourceIndex = i;
             }
         }
 
         alSourcei(sources[minSourceIndex], AL_BUFFER, sounds.get(sound).buffer);
         alSourcePlay(sources[minSourceIndex]);
+
+        sourceEnd[minSourceIndex] = (float) glfwGetTime() + duration;
     }
 
     public SoundHandle loadSound(String path) {

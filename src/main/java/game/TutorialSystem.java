@@ -18,9 +18,10 @@ public class TutorialSystem implements GameSystem {
 
     @Override
     public void init() {
+        System.out.println("Tutorial init");
         game.playButton.show = false;
         game.musicPlayer.show = true;
-        game.musicPlayer.musicTime = -3;
+        game.musicPlayer.currentMeasure = 0;
     }
 
     @Override
@@ -30,11 +31,10 @@ public class TutorialSystem implements GameSystem {
 
     @Override
     public void update() {
-        musicPlayer.update();
     }
 
     @Override
     public void render() {
-        musicPlayer.render();
+
     }
 }
