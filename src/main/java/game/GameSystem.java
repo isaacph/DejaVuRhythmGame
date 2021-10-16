@@ -1,8 +1,10 @@
 package game;
 
+import java.util.function.Consumer;
+
 public interface GameSystem {
 
-    void setFinishedCallback(Runnable runnable);
+    void setFinishedCallback(Consumer<State> onFinish);
     void init();
     void update();
     void render();

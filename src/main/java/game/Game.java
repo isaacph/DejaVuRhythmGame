@@ -22,19 +22,24 @@ public class Game {
     // The window handle
     public long window;
 
-    private DrawSimple drawSimple;
-    private DrawFont mainFont;
-    private final Matrix4f ortho = new Matrix4f();
-
-    private final Vector2f screenSize = new Vector2f();
+    public Texture menuTexture;
+    public DrawSimple drawSimple;
+    public DrawTexture drawTexture;
+    public DrawFont mainFont;
+    public DrawFont bigFont;
+    public final Matrix4f ortho = new Matrix4f();
+    public final Vector2f screenSize = new Vector2f();
 
     public double currentTime;
     public double delta;
+    public final Vector2f mousePos = new Vector2f();
 
-    public final ArrayList<GameSystem> systems = new ArrayList<>();
-    private int currentSystem;
+    public final Map<State, GameSystem> systems = new HashMap<>();
+    private State currentSystem;
 
     public MusicPlayer musicPlayer;
+
+    public MenuButton playButton;
 
     public void run() {
         System.out.println("Hello LWJGL " + Version.getVersion() + "!");
@@ -82,6 +87,8 @@ public class Game {
 
         // Set the clear color
         glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
         // Setup a key callback. It will be called every time a key is pressed, repeated or released.
         glfwSetKeyCallback(window, (window, key, scancode, action, mods) -> {
@@ -91,22 +98,28 @@ public class Game {
         glfwSetWindowSizeCallback(window, (window1, width, height) -> {
             this.onWindowSize(width, height);
         });
-        this.onWindowSize(800, 600);
 
         drawSimple = new DrawSimple();
+        drawTexture = new DrawTexture();
+        mainFont = new DrawFont("font.ttf", 32, 512, 512);
+        bigFont = new DrawFont("font.ttf", 80, 1024, 512);
+        menuTexture = Texture.makeTexture("Background_Test_2.png");
 
         musicPlayer = new MusicPlayer(this);
+        playButton = new MenuButton(this, new Vector2f(0), new Vector2f(200, 100), "Button");
 
-        systems.add(new MenuSystem(this));
-        systems.add(new TutorialSystem(this));
 
-        systems.forEach(gameSystem -> gameSystem.setFinishedCallback(() -> {
-            ++this.currentSystem;
+        this.onWindowSize(800, 600);
+
+        systems.put(State.MENU, new MenuSystem(this));
+        systems.put(State.TUTORIAL, new TutorialSystem(this));
+
+        systems.forEach((state, gameSystem) -> gameSystem.setFinishedCallback((nextState) -> {
+            currentSystem = nextState;
             systems.get(currentSystem).init();
         }));
+        currentSystem = State.MENU;
         systems.get(this.currentSystem).init();
-
-        mainFont = new DrawFont("font.ttf", 32, 512, 512);
     }
 
     private void loop() {
@@ -120,35 +133,23 @@ public class Game {
             delta = currentTime - lastTime;
             lastTime = currentTime;
 
-            for(GameSystem system : systems) {
-                system.update();
-            }
+            double[] mx = new double[1], my = new double[1];
+            glfwGetCursorPos(window, mx, my);
+            mousePos.set((float) mx[0], (float) my[0]);
+
+            systems.get(currentSystem).update();
 
             musicPlayer.update();
+            playButton.update();
 
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear the framebuffer
 
-            for(GameSystem system : systems) {
-                system.render();
-            }
+//            drawSimple.draw(new Matrix4f(ortho).translate(100, 100, 0).scale(100, 100, 0), new Vector4f(1));
 
-            /* draw important stuff */
-            for(Note note : musicPlayer.activeNotes) {
-                Vector2f pos = new Vector2f(musicPlayer.notePosition.get(note.position));
-                translateToScreen(pos);
-                //drawSimple.draw(new Matrix4f(ortho).translate(pos.x, pos.y, 0).scale(100), new Vector4f(1.0f, 1.0f, 1.0f, 1.0f));
-            }
+            playButton.render();
+            musicPlayer.render();
 
-            Vector4f col = new Vector4f(1.0f, 1.0f, 1.0f, 1.0f);
-            if(musicPlayer.goodness == 1) {
-                col = new Vector4f(1.0f, 0.0f, 0.0f, 1.0f);
-            } else if(musicPlayer.goodness == 2) {
-                col = new Vector4f(0.0f, 1.0f, 0.0f, 1.0f);
-            }
-
-            // draw goodness
-            //drawSimple.draw(new Matrix4f(ortho).translate(screenSize.x / 2.0f, 80, 0).scale(100), col);
-            drawSimple.draw(new Matrix4f(ortho).translate(100, 100, 0).scale(100, 100, 0), new Vector4f(1));
+            systems.get(currentSystem).render();
 
             //mainFont.draw("hello fon wotrld", 40, 40, new Matrix4f(ortho));
 
@@ -160,6 +161,7 @@ public class Game {
         }
 
         drawSimple.destroy();
+        drawTexture.destroy();
         mainFont.cleanUp();
     }
 
@@ -171,9 +173,6 @@ public class Game {
         glViewport(0, 0, x, y);
         this.ortho.identity().ortho(0, x, y, 0, -1, 1);
         this.screenSize.set(x, y);
-    }
-
-    public void translateToScreen(Vector2f pos) {
-        pos.set((pos.x / 100.0f * 0.5f + 0.25f) * screenSize.x, (pos.y / 100.0f * 0.5f + 0.25f) * screenSize.y);
+        this.playButton.center.set(x / 2.0f, y * 3.0f / 4.0f);
     }
 }

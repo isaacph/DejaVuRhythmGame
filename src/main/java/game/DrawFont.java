@@ -24,6 +24,7 @@ import static org.lwjgl.opengl.GL15.glBufferData;
 import static org.lwjgl.opengl.GL15.glDeleteBuffers;
 import static org.lwjgl.opengl.GL15.glGenBuffers;
 import static org.lwjgl.opengl.GL20.*;
+import static org.lwjgl.opengl.GL30.*;
 
 /**
  * Font rendering is annoying AF and unoriginal to rewrite. Taken from my previous code:
@@ -43,7 +44,7 @@ public class DrawFont {
     private float lsb[] = new float[CHAR_COUNT];
     private float aHeight, AHeight;
     private int texture;
-    //    private int vao;
+    private int vao;
     private int vbo;
 
     public DrawFont(String source, int size, int bmpWidth, int bmpHeight) {
@@ -188,8 +189,8 @@ public class DrawFont {
 //                vertices.put(vert);
 //                vertices.flip();
 
-//                vao = glGenVertexArrays();
-//                glBindVertexArray(vao);
+                vao = glGenVertexArrays();
+                glBindVertexArray(vao);
 
                 vbo = glGenBuffers();
                 glBindBuffer(GL_ARRAY_BUFFER, vbo);
@@ -217,13 +218,14 @@ public class DrawFont {
         if(text.length() == 0) {
             return;
         }
-        glBindBuffer(GL_ARRAY_BUFFER, vbo);
-        glEnableVertexAttribArray(ShaderUtil.Attribute.POSITION.position);
-        glVertexAttribPointer(ShaderUtil.Attribute.POSITION.position,
-                2, GL_FLOAT, false, 4 * 4, 0);
-        glEnableVertexAttribArray(ShaderUtil.Attribute.TEXTURE.position);
-        glVertexAttribPointer(ShaderUtil.Attribute.TEXTURE.position,
-                2, GL_FLOAT, false, 4 * 4, 2 * 4);
+//        glBindBuffer(GL_ARRAY_BUFFER, vbo);
+//        glEnableVertexAttribArray(ShaderUtil.Attribute.POSITION.position);
+//        glVertexAttribPointer(ShaderUtil.Attribute.POSITION.position,
+//                2, GL_FLOAT, false, 4 * 4, 0);
+//        glEnableVertexAttribArray(ShaderUtil.Attribute.TEXTURE.position);
+//        glVertexAttribPointer(ShaderUtil.Attribute.TEXTURE.position,
+//                2, GL_FLOAT, false, 4 * 4, 2 * 4);
+        glBindVertexArray(vao);
         glUseProgram(shader);
         glUniform1i(shaderSampler, 0);
         glActiveTexture(GL_TEXTURE0);
@@ -250,8 +252,8 @@ public class DrawFont {
                 }
             }
         }
-        glDisableVertexAttribArray(ShaderUtil.Attribute.POSITION.position);
-        glDisableVertexAttribArray(ShaderUtil.Attribute.TEXTURE.position);
+//        glDisableVertexAttribArray(ShaderUtil.Attribute.POSITION.position);
+//        glDisableVertexAttribArray(ShaderUtil.Attribute.TEXTURE.position);
     }
 
     public float textWidth(String text) {
@@ -265,7 +267,7 @@ public class DrawFont {
 
     public void cleanUp() {
         glDeleteProgram(shader);
-//        glDeleteVertexArrays(vao);
+        glDeleteVertexArrays(vao);
         glDeleteBuffers(vbo);
     }
 

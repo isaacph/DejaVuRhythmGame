@@ -1,6 +1,8 @@
 package game;
 
+import org.joml.Matrix4f;
 import org.joml.Vector2f;
+import org.joml.Vector4f;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -40,6 +42,8 @@ public class MusicPlayer {
 
     public boolean keyDown = false;
 
+    public boolean show = true;
+
     public MusicPlayer(Game game) {
         this.game = game;
         notePosition = new HashMap<>();
@@ -60,6 +64,8 @@ public class MusicPlayer {
     }
 
     public void update() {
+        if(!show) return;
+
         musicTime += game.delta * bpm / 60.0;
 
         boolean added = true;
@@ -95,6 +101,26 @@ public class MusicPlayer {
     }
 
     public void render() {
+        if(!show) return;
+        /* draw important stuff */
+        for(Note note : activeNotes) {
+            Vector2f pos = new Vector2f(notePosition.get(note.position));
+            translateToScreen(pos);
+            game.drawSimple.draw(new Matrix4f(game.ortho).translate(pos.x, pos.y, 0).scale(100), new Vector4f(1.0f, 1.0f, 1.0f, 1.0f));
+        }
 
+        Vector4f col = new Vector4f(1.0f, 1.0f, 1.0f, 1.0f);
+        if(goodness == 1) {
+            col = new Vector4f(1.0f, 0.0f, 0.0f, 1.0f);
+        } else if(goodness == 2) {
+            col = new Vector4f(0.0f, 1.0f, 0.0f, 1.0f);
+        }
+
+        // draw goodness
+        game.drawSimple.draw(new Matrix4f(game.ortho).translate(game.screenSize.x / 2.0f, 80, 0).scale(100), col);
+    }
+
+    public void translateToScreen(Vector2f pos) {
+        pos.set((pos.x / 100.0f * 0.5f + 0.25f) * game.screenSize.x, (pos.y / 100.0f * 0.5f + 0.25f) * game.screenSize.y);
     }
 }
