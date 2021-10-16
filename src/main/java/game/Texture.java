@@ -1,13 +1,16 @@
 package game;
 
 import org.joml.Vector2i;
+import org.lwjgl.stb.STBImage;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.nio.IntBuffer;
 import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
 
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL12.GL_CLAMP_TO_EDGE;
@@ -32,6 +35,10 @@ public class Texture {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, settings.filter);
     }
 
+    public void bind() {
+        glBindTexture(GL_TEXTURE_2D, handle);
+    }
+
     public void destroy() {
         glDeleteTextures(handle);
     }
@@ -46,10 +53,10 @@ public class Texture {
             e.printStackTrace();
             try(MemoryStack stack = MemoryStack.stackPush()) {
                 ByteBuffer data = stack.malloc(16);
-                data.put((byte) 0);
-                data.put((byte) -128);
-                data.put((byte) -128);
-                data.put((byte) 0);
+                data.put((byte) 0).put((byte) 0).put((byte) 0).put((byte) -1);
+                data.put((byte) -1).put((byte) -1).put((byte) -1).put((byte) -1);
+                data.put((byte) -1).put((byte) -1).put((byte) -1).put((byte) -1);
+                data.put((byte) 0).put((byte) 0).put((byte) 0).put((byte) -128);
                 data.flip();
                 Vector2i size = new Vector2i(2, 2);
                 return new Texture(data, size, new Settings());
@@ -58,17 +65,16 @@ public class Texture {
     }
 
     public static ByteBuffer loadFromFile(String path, Vector2i destSize) throws IOException {
-        InputStream file = FileUtil.getInputStream(path);
-        ByteBuffer data = MemoryUtil.memAlloc(file.available());
-        Channels.newChannel(file).read(data);
-        int[] w = {0};
-        int[] h = {0};
-        int[] channels = {0};
-        stbi_load_from_memory(data, w, h, channels, 4);
-        if (channels[0] != 4) {
-            System.err.println("Weird number of channels in " + path + ": " + channels[0]);
+        try(MemoryStack stack = MemoryStack.stackPush()) {
+            IntBuffer w = stack.ints(0);
+            IntBuffer h = stack.ints(0);
+            IntBuffer bpp = stack.ints(0);
+            ByteBuffer data = FileUtil.loadDataFromFile(path);
+            ByteBuffer bitmap = STBImage.stbi_load_from_memory(data, w, h, bpp, 4);
+            destSize.x = w.get();
+            destSize.y = h.get();
+            return bitmap;
         }
-        return data;
     }
 
     public static class Settings {

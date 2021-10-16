@@ -7,8 +7,6 @@ import org.lwjgl.*;
 import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.*;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -22,13 +20,20 @@ public class Game {
     // The window handle
     public long window;
 
-    public Texture menuTexture;
+    public SoundPlayer soundPlayer;
+    public SoundHandle testSound;
+
+    public Texture boardTexture;
+    public Texture enemyTexture;
+
     public DrawSimple drawSimple;
     public DrawTexture drawTexture;
     public DrawFont mainFont;
     public DrawFont bigFont;
     public final Matrix4f ortho = new Matrix4f();
     public final Vector2f screenSize = new Vector2f();
+    public final Vector2f gameScreenSize = new Vector2f();
+    public final Vector2f gameScreenCorner = new Vector2f();
 
     public double currentTime;
     public double delta;
@@ -103,7 +108,11 @@ public class Game {
         drawTexture = new DrawTexture();
         mainFont = new DrawFont("font.ttf", 32, 512, 512);
         bigFont = new DrawFont("font.ttf", 80, 1024, 512);
-        menuTexture = Texture.makeTexture("Background_Test_2.png");
+        boardTexture = Texture.makeTexture("sprites/background_1_tmp.png");
+        enemyTexture = Texture.makeTexture("sprites/enemy_1.png");
+
+        soundPlayer = new SoundPlayer();
+        testSound = soundPlayer.loadSound("");
 
         musicPlayer = new MusicPlayer(this);
         playButton = new MenuButton(this, new Vector2f(0), new Vector2f(200, 100), "Button");
@@ -144,7 +153,10 @@ public class Game {
 
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear the framebuffer
 
-//            drawSimple.draw(new Matrix4f(ortho).translate(100, 100, 0).scale(100, 100, 0), new Vector4f(1));
+            if(musicPlayer.show) {
+                boardTexture.bind();
+                drawTexture.draw(new Matrix4f(ortho).translate(screenSize.x / 2.0f, screenSize.y / 2.0f, 0).scale(gameScreenSize.x, gameScreenSize.y, 0), new Vector4f(1));
+            }
 
             playButton.render();
             musicPlayer.render();
@@ -163,6 +175,7 @@ public class Game {
         drawSimple.destroy();
         drawTexture.destroy();
         mainFont.cleanUp();
+        soundPlayer.destroy();
     }
 
     public static void main(String[] args) {
@@ -174,5 +187,16 @@ public class Game {
         this.ortho.identity().ortho(0, x, y, 0, -1, 1);
         this.screenSize.set(x, y);
         this.playButton.center.set(x / 2.0f, y * 3.0f / 4.0f);
+        boolean smallerX = screenSize.x / 4 < screenSize.y / 3;
+        float width, height;
+        if(smallerX) {
+            width = screenSize.x;
+            height = screenSize.x / (4.0f / 3.0f);
+        } else {
+            width = screenSize.y / (3.0f / 4.0f);
+            height = screenSize.y;
+        }
+        this.gameScreenSize.set(width, height);
+        this.gameScreenCorner.set(screenSize.x / 2.0f - width / 2.0f, screenSize.y / 2.0f - height / 2.0f);
     }
 }

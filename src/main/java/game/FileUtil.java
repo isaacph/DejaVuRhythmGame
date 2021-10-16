@@ -1,6 +1,11 @@
 package game;
 
+import org.lwjgl.system.MemoryUtil;
+
 import java.io.*;
+import java.nio.ByteBuffer;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
 
 public class FileUtil {
 
@@ -32,5 +37,22 @@ public class FileUtil {
         }
         stream.close();
         return content.toString();
+    }
+
+    public static ByteBuffer loadDataFromFile(String path) {
+        ByteBuffer data;
+        try {
+            InputStream stream = FileUtil.getInputStream(path);
+            ReadableByteChannel channel = Channels.newChannel(stream);
+            data = MemoryUtil.memAlloc(stream.available());
+            channel.read(data);
+            channel.close();
+            data.flip();
+        } catch(Exception e) {
+            System.err.println("Error loading texture " + path);
+            e.printStackTrace();
+            return null;
+        }
+        return data;
     }
 }

@@ -20,9 +20,9 @@ public class MusicPlayer {
 
     private Vector2f[] notePos = new Vector2f[] {
             new Vector2f(0, 0),
-            new Vector2f(50, 0),
-            new Vector2f(100, 0),
-            new Vector2f(0, 50),
+            new Vector2f(640, 0),
+            new Vector2f(0, 480),
+            new Vector2f(640, 480),
             new Vector2f(50, 50),
             new Vector2f(100, 50),
             new Vector2f(0, 100),
@@ -106,7 +106,8 @@ public class MusicPlayer {
         for(Note note : activeNotes) {
             Vector2f pos = new Vector2f(notePosition.get(note.position));
             translateToScreen(pos);
-            game.drawSimple.draw(new Matrix4f(game.ortho).translate(pos.x, pos.y, 0).scale(100), new Vector4f(1.0f, 1.0f, 1.0f, 1.0f));
+            game.enemyTexture.bind();
+            game.drawTexture.draw(new Matrix4f(game.ortho).translate(pos.x, pos.y, 0).scale(100), new Vector4f(1.0f, 1.0f, 1.0f, 1.0f));
         }
 
         Vector4f col = new Vector4f(1.0f, 1.0f, 1.0f, 1.0f);
@@ -121,6 +122,6 @@ public class MusicPlayer {
     }
 
     public void translateToScreen(Vector2f pos) {
-        pos.set((pos.x / 100.0f * 0.5f + 0.25f) * game.screenSize.x, (pos.y / 100.0f * 0.5f + 0.25f) * game.screenSize.y);
+        pos.set(pos).div(640.0f, 480.0f).mul(game.gameScreenSize).add(game.gameScreenCorner);
     }
 }
