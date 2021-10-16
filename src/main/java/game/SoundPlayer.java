@@ -31,7 +31,7 @@ public class SoundPlayer {
     private final Map<SoundHandle, SoundInfo> sounds = new HashMap<>();
 
     private final int[] sources = new int[100];
-    private final float[] sourceEnd = new float[sources.length];
+    private final double[] sourceEnd = new double[sources.length];
 
     public SoundPlayer() {
 
@@ -50,25 +50,27 @@ public class SoundPlayer {
 
         alGenSources(sources);
         for(int i = 0; i < sourceEnd.length; ++i) {
-            sourceEnd[i] = 0;
+            sourceEnd[i] = glfwGetTime();
         }
     }
 
     public void play(SoundHandle sound, float duration) {
         int minSourceIndex = 0;
-        float minSourceTime = -1;
+        double minSourceTime = Double.MAX_VALUE;
 
         for(int i = 0; i < sources.length; ++i) {
-            if(minSourceTime > sourceEnd[i]) {
+            if(sourceEnd[i] < minSourceTime) {
                 minSourceTime = sourceEnd[i];
                 minSourceIndex = i;
             }
         }
 
+        System.out.println(sound.toString() + ": " + sounds.get(sound).buffer + ", " + sources[minSourceIndex]);
+        alSourceUnqueueBuffers(sources[minSourceIndex]);
         alSourcei(sources[minSourceIndex], AL_BUFFER, sounds.get(sound).buffer);
         alSourcePlay(sources[minSourceIndex]);
 
-        sourceEnd[minSourceIndex] = (float) glfwGetTime() + duration;
+        sourceEnd[minSourceIndex] = glfwGetTime() + duration;
     }
 
     public SoundHandle loadSound(String path) {
@@ -106,7 +108,7 @@ public class SoundPlayer {
 
             free(rawAudioBuffer);
 
-            SoundHandle handle = new SoundHandle();
+            SoundHandle handle = new SoundHandle(path);
             sounds.put(handle, info);
             return handle;
         }

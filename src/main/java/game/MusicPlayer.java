@@ -20,9 +20,9 @@ public class MusicPlayer {
 
     private Vector2f[] notePos = new Vector2f[] {
             new Vector2f(0, 0),
-            new Vector2f(640, 0),
-            new Vector2f(0, 480),
-            new Vector2f(640, 480),
+            new Vector2f(50, 0),
+            new Vector2f(100, 0),
+            new Vector2f(0, 50),
             new Vector2f(50, 50),
             new Vector2f(100, 50),
             new Vector2f(0, 100),
@@ -70,13 +70,9 @@ public class MusicPlayer {
             measure.startingSounds.add("A");
             measure.startingSounds.add("1A");
             measure.noteInfo.add(new Note(0.0f, 4.0f, 1));
-            measure.noteInfo.add(new Note(0.5f, 4.0f, 2));
             measure.noteInfo.add(new Note(1.0f, 4.0f, 3));
-            measure.noteInfo.add(new Note(1.5f, 4.0f, 4));
             measure.noteInfo.add(new Note(2.0f, 4.0f, 5));
-            measure.noteInfo.add(new Note(2.5f, 4.0f, 6));
             measure.noteInfo.add(new Note(3.0f, 4.0f, 7));
-            measure.noteInfo.add(new Note(3.5f, 4.0f, 8));
             Collections.sort(measure.noteInfo);
             measuresToPlay.add(measure);
         }
@@ -87,7 +83,7 @@ public class MusicPlayer {
             measuresToPlay.add(measure);
         }
 
-        hitSound = game.soundPlayer.loadSound("");
+        hitSound = game.soundPlayer.loadSound("soundfx/clap.ogg");
 
         for(String rhythm : RHYTHM_NAMES) {
             sounds.put(rhythm, game.soundPlayer.loadSound("music/Rhythm_" + rhythm + ".ogg"));
@@ -122,12 +118,13 @@ public class MusicPlayer {
                 if (!activeNotes.isEmpty()) {
                     Note note = activeNotes.remove(0);
                     double diff = (playMusicTime.get(note) - currentMeasure) / bpm * 60.0;
-                    if (Math.abs(diff) < 0.2) {
+                    if (Math.abs(diff) < 0.05) {
                         goodness = 2;
                     } else {
                         goodness = 1;
                     }
                     System.out.println("Hit note with diff " + diff);
+                    game.soundPlayer.play(hitSound, 0.1f);
                 }
             }
         }
