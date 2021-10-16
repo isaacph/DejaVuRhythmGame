@@ -69,4 +69,14 @@ public class ShaderUtil {
             return;
         }
     }
+
+    public enum Attribute {
+
+        POSITION(0), TEXTURE(1);
+
+        public int position;
+        Attribute(int position) {
+            this.position = position;
+        }
+    }
 }

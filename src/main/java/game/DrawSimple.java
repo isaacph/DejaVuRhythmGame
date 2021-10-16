@@ -32,6 +32,7 @@ public class DrawSimple {
         program = glCreateProgram();
         glAttachShader(program, vshader);
         glAttachShader(program, fshader);
+        glBindAttribLocation(program, ShaderUtil.Attribute.POSITION.position, "position");
         glLinkProgram(program);
         ShaderUtil.checkLinking(program);
         glUseProgram(program);
@@ -49,8 +50,8 @@ public class DrawSimple {
         glBindBuffer(GL_ARRAY_BUFFER, vbo);
         glBufferData(GL_ARRAY_BUFFER, points, GL_STATIC_DRAW);
 
-        glEnableVertexAttribArray(0);
-        glVertexAttribPointer(0, 2, GL_FLOAT, false, 2 * 4, 0);
+        glEnableVertexAttribArray(ShaderUtil.Attribute.POSITION.position);
+        glVertexAttribPointer(ShaderUtil.Attribute.POSITION.position, 2, GL_FLOAT, false, 2 * 4, 0);
     }
 
     public void draw(Matrix4f matrix, Vector4f color) {
