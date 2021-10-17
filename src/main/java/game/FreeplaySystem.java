@@ -183,7 +183,7 @@ public class FreeplaySystem implements GameSystem {
                 game.musicPlayer.measuresToPlay.add(fastMeasure);
             }
         }
-//        // now we do the second phrase (measures 5-8)
+        // now we do the second phrase (measures 5-8)
         for(int m = 0; m < 2; ++m) {
             for(int i = 4; i < 8; ++i) {
                 String rhythm = rhythms[random.nextInt(4)];
@@ -197,6 +197,19 @@ public class FreeplaySystem implements GameSystem {
                 fastMeasure.noteInfo.addAll(withCombinedSpawn(rhythmNotes.get(rhythm), -0.25f));
                 game.musicPlayer.measuresToPlay.add(fastMeasure);
             }
+        }
+        // do measures 9-12 once
+        for(int i = 8; i < 12; ++i) {
+            String rhythm = rhythms[random.nextInt(4)];
+            int melody = i + 1;
+            int chord = i + 1;
+
+            GameplayMeasure fastMeasure = new GameplayMeasure(0.25f);
+            fastMeasure.startingSounds.add(rhythm);
+            fastMeasure.startingSounds.add(melody + rhythm);
+            fastMeasure.startingSounds.add("chord_" + chord);
+            fastMeasure.noteInfo.addAll(withCombinedSpawn(rhythmNotes.get(rhythm), -0.25f));
+            game.musicPlayer.measuresToPlay.add(fastMeasure);
         }
         ++phrases;
     }

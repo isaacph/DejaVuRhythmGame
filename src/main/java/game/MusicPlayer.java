@@ -46,7 +46,7 @@ public class MusicPlayer {
 
     public final Map<String, SoundHandle> sounds = new HashMap<>();
 
-    public static final int[] MELODY_NUMBERS = {1, 2, 3, 4, 5, 6, 7, 8};
+    public static final int[] MELODY_NUMBERS = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
     public static final String[] RHYTHM_NAMES = {"A", "B", "C", "D"};
 
     public static final double HIT_LENIENCY = 0.05;
