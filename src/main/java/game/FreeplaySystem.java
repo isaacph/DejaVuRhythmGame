@@ -150,10 +150,12 @@ public class FreeplaySystem implements GameSystem {
         for(int i = 0; i < 4; ++i) {
             String rhythm = rhythms[random.nextInt(4)];
             int melody = i + 1;
+            int chord = i + 1;
 
             GameplayMeasure fastMeasure = new GameplayMeasure(0.25f);
             fastMeasure.startingSounds.add(rhythm);
             fastMeasure.startingSounds.add(melody + rhythm);
+            fastMeasure.startingSounds.add("chord_" + chord);
             fastMeasure.noteInfo.addAll(withCombinedSpawn(rhythmNotes.get(rhythm), -0.25f));
             game.musicPlayer.measuresToPlay.add(fastMeasure);
         }
