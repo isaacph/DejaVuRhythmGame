@@ -48,6 +48,7 @@ public class Game {
     public MusicPlayer musicPlayer;
 
     public MenuButton playButton;
+    public MenuButton tutorialButton;
 
     public void run() {
         System.out.println("Hello LWJGL " + Version.getVersion() + "!");
@@ -106,7 +107,8 @@ public class Game {
         glfwSetWindowSizeCallback(window, (window1, width, height) -> {
             this.onWindowSize(width, height);
         });
-        playButton = new MenuButton(this, new Vector2f(0), new Vector2f(200, 100), "Button");
+        playButton = new MenuButton(this, new Vector2f(0), new Vector2f(200, 100), "Play");
+        tutorialButton = new MenuButton(this, new Vector2f(0), new Vector2f(200, 100), "Tutorial");
         this.onWindowSize(800, 600);
 
         drawSimple = new DrawSimple();
@@ -126,6 +128,7 @@ public class Game {
 
         systems.put(State.MENU, new MenuSystem(this));
         systems.put(State.TUTORIAL, new TutorialSystem(this));
+        systems.put(State.PLAY, new FreeplaySystem(this));
 
         systems.forEach((state, gameSystem) -> gameSystem.setFinishedCallback((nextState) -> {
             currentSystem = nextState;
@@ -146,14 +149,18 @@ public class Game {
             delta = currentTime - lastTime;
             lastTime = currentTime;
 
-            double[] mx = new double[1], my = new double[1];
-            glfwGetCursorPos(window, mx, my);
-            mousePos.set((float) mx[0], (float) my[0]);
+            if(delta < 0.1) {
 
-            systems.get(currentSystem).update();
+                double[] mx = new double[1], my = new double[1];
+                glfwGetCursorPos(window, mx, my);
+                mousePos.set((float) mx[0], (float) my[0]);
 
-            musicPlayer.update();
-            playButton.update();
+                systems.get(currentSystem).update();
+
+                musicPlayer.update();
+                playButton.update();
+                tutorialButton.update();
+            }
 
             glClear(GL_COLOR_BUFFER_BIT); // clear the framebuffer
 
@@ -163,6 +170,7 @@ public class Game {
             }
 
             playButton.render();
+            tutorialButton.render();
             musicPlayer.render();
 
             systems.get(currentSystem).render();
@@ -191,7 +199,8 @@ public class Game {
         glViewport(0, 0, x, y);
         this.ortho.identity().ortho(0, x, y, 0, -1, 1);
         this.screenSize.set(x, y);
-        this.playButton.center.set(x / 2.0f, y * 3.0f / 4.0f);
+        this.playButton.center.set(x / 2.0f, y * 6.5f / 8.0f);
+        this.tutorialButton.center.set(x / 2.0f, y * 5.0f / 8.0f);
         boolean smallerX = screenSize.x / 4 < screenSize.y / 3;
         float width, height;
         if(smallerX) {

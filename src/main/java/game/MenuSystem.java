@@ -16,9 +16,13 @@ public class MenuSystem implements GameSystem {
 
     @Override
     public void init() {
+        game.tutorialButton.show = true;
         game.playButton.show = true;
         game.musicPlayer.show = false;
         game.playButton.onPressed = () -> {
+            this.finishFunc.accept(State.PLAY);
+        };
+        game.tutorialButton.onPressed = () -> {
             this.finishFunc.accept(State.TUTORIAL);
         };
     }

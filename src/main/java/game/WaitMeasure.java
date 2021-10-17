@@ -7,7 +7,7 @@ public class WaitMeasure implements MeasureInfo {
     public String text;
 
     public WaitMeasure(Game game, String text) {
-        this.text = game.smallFont.cutOffStringBasedOnSize(text, 112 / 320.0f * game.screenSize.x);
+        this.text = game.smallFont.cutOffStringBasedOnSize(text, 112 / 320.0f * game.gameScreenSize.x);
     }
 
     @Override
@@ -25,6 +25,11 @@ public class WaitMeasure implements MeasureInfo {
     }
 
     @Override
+    public void measurePreUpdate(Game game, double measureStart) {
+
+    }
+
+    @Override
     public void measureEnd(Game game) {
         game.musicPlayer.topText = "";
     }
@@ -32,5 +37,10 @@ public class WaitMeasure implements MeasureInfo {
     @Override
     public double getLength() {
         return 0.0f;
+    }
+
+    @Override
+    public double getPreUpdateRequirement() {
+        return 0;
     }
 }

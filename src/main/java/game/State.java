@@ -2,5 +2,5 @@ package game;
 
 public enum State {
 
-    MENU, TUTORIAL
+    MENU, TUTORIAL, PLAY
 }

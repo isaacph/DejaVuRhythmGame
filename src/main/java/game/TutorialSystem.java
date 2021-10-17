@@ -10,21 +10,23 @@ public class TutorialSystem implements GameSystem {
 
     private final Game game;
     private Consumer<State> finishFunc;
-    private MusicPlayer musicPlayer;
 
     public TutorialSystem(Game game) {
         this.game = game;
-        this.musicPlayer = new MusicPlayer(game);
     }
 
     @Override
     public void init() {
         System.out.println("Tutorial init");
         game.playButton.show = false;
+        game.tutorialButton.show = false;
         game.musicPlayer.show = true;
         game.musicPlayer.currentMeasure = -0.01;
 
         game.musicPlayer.measuresToPlay.clear();
+        game.musicPlayer.activeNotes.clear();
+        game.musicPlayer.goodness = 0;
+
         {
             WaitMeasure measure = new WaitMeasure(game, "Press the space key to start.");
             game.musicPlayer.measuresToPlay.add(measure);
@@ -130,7 +132,8 @@ public class TutorialSystem implements GameSystem {
             measure.startingSounds.add("D");
             measure.startingSounds.add("1D");
             game.musicPlayer.measuresToPlay.add(measure);
-        }        
+        }
+        game.musicPlayer.onFinish = () -> this.finishFunc.accept(State.MENU);
     }
 
     @Override

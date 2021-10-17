@@ -35,10 +35,7 @@ public class MusicPlayer {
     public double bpm = 120.0;
 
     public int noteInfoPos = 0;
-    public ArrayList<Note> activeNotes = new ArrayList<>();
-    public Map<Note, Float> playMusicTime = new HashMap<>();
-    public Map<Note, NoteStatus> activeNoteStatus = new HashMap<>();
-    public Map<Note, Double> activeNoteStatusTime = new HashMap<>();
+    public ArrayList<ActiveNote> activeNotes = new ArrayList<>();
 
     public int goodness = 0;
 
@@ -60,6 +57,8 @@ public class MusicPlayer {
     public SoundHandle cueSound;
 
     public boolean waiting = false;
+
+    public Runnable onFinish = () -> {};
 
     public MusicPlayer(Game game) {
         this.game = game;
@@ -87,7 +86,9 @@ public class MusicPlayer {
         if(!show) return;
 
         int prevMeasure = getMeasure(currentMeasure);
-        if(!waiting) currentMeasure += game.delta * bpm / 60.0 / 4.0f;
+        if(!waiting) {
+            currentMeasure += game.delta * bpm / 60.0 / 4.0f;
+        }
         int measureIndex = getMeasure(currentMeasure);
 //        System.out.println(prevMeasure + ", " + measureIndex + ": " + currentMeasure);
         for(int mI = Math.max(0, prevMeasure); mI <= Math.min(measuresToPlay.size() - 1, measureIndex); ++mI) {
@@ -105,38 +106,44 @@ public class MusicPlayer {
             }
         }
 
+        // do pre-updates
+        for(int preUpdateIndex : getPreUpdateMeasures(currentMeasure)) {
+            measuresToPlay.get(preUpdateIndex).measurePreUpdate(game, getMeasureStart(preUpdateIndex));
+        }
+
+        if(measureIndex == measuresToPlay.size()) {
+            Runnable onF = this.onFinish;
+            this.onFinish = () -> {};
+            onF.run();
+        }
+
         // change notes to missed
-        for(Note note : activeNotes) {
-            if(activeNoteStatus.get(note) != NoteStatus.READY) continue;
-            double diff = (playMusicTime.get(note) - currentMeasure) / bpm * 60.0;
+        for(ActiveNote note : activeNotes) {
+            if(note.status != NoteStatus.READY) continue;
+            double diff = (note.playTime - currentMeasure) / bpm * 60.0;
             if(diff < -HIT_GIVE_UP) {
-                activeNoteStatus.put(note, NoteStatus.MISSED);
+                note.status = NoteStatus.MISSED;
+                note.statusLastChanged = currentMeasure;
             } else break;
         }
 
         // removed finished notes
         for(int i = activeNotes.size() - 1; i >= 0; --i) {
-            Note note = activeNotes.get(i);
-            if(activeNoteStatus.get(note) == NoteStatus.DEAD) {
-                if((int) (1 + (currentMeasure - activeNoteStatusTime.get(note)) * 20.0f) >= 6) {
+            ActiveNote note = activeNotes.get(i);
+            if(note.status == NoteStatus.DEAD) {
+                if((int) (1 + (currentMeasure - note.statusLastChanged) * 20.0f) >= 6) {
                     activeNotes.remove(i);
-                    activeNoteStatusTime.remove(note);
-                    activeNoteStatus.remove(note);
-                    playMusicTime.remove(note);
                 }
-            } else if(activeNoteStatus.get(note) == NoteStatus.MISSED) {
+            } else if(note.status == NoteStatus.MISSED) {
                 activeNotes.remove(i);
-                activeNoteStatusTime.remove(note);
-                activeNoteStatus.remove(note);
-                playMusicTime.remove(note);
             }
         }
 
         if(glfwGetKey(game.window, GLFW_KEY_SPACE) == GLFW_PRESS) {
             if(!keyDown) {
-                for (Note note : activeNotes) {
-                    if(activeNoteStatus.get(note) != NoteStatus.READY) continue;
-                    double diff = (playMusicTime.get(note) - currentMeasure) / bpm * 60.0;
+                for (ActiveNote note : activeNotes) {
+                    if(note.status != NoteStatus.READY) continue;
+                    double diff = (note.playTime - currentMeasure) / bpm * 60.0;
                     boolean die = false;
                     if(diff > HIT_GIVE_UP) {
                         goodness = 0;
@@ -154,8 +161,8 @@ public class MusicPlayer {
                     System.out.println("Hit note with diff " + diff + " at time " + currentMeasure);
                     game.soundPlayer.play(hitSound, 0.1f);
                     if(die) {
-                        activeNoteStatus.put(note, NoteStatus.DEAD);
-                        activeNoteStatusTime.put(note, currentMeasure);
+                        note.status = (NoteStatus.DEAD);
+                        note.statusLastChanged = (currentMeasure);
                     }
                     break;
                 }
@@ -167,25 +174,25 @@ public class MusicPlayer {
     public void render() {
         if(!show) return;
         /* draw important stuff */
-        for(Note note : activeNotes) {
-            Vector2f pos = new Vector2f(notePosition.get(note.position));
+        for(ActiveNote note : activeNotes) {
+            Vector2f pos = new Vector2f(notePosition.get(note.note.position));
             translateToScreen(pos);
 
-            if(activeNoteStatus.get(note) == NoteStatus.DEAD) {
-                double timeElapsed = currentMeasure - activeNoteStatusTime.get(note);
+            if(note.status == NoteStatus.DEAD) {
+                double timeElapsed = currentMeasure - note.statusLastChanged;
                 int frame = 1 + (int) (timeElapsed * 20.0);
 
                 game.enemyDieTexture.bind();
 //            game.drawFramed.draw(new Matrix4f(game.ortho).translate(pos.x, pos.y, 0).scale(100),
 //                    new Vector4f(1.0f, 1.0f, 1.0f, 1.0f),
 //                    new Vector2f(0), new Vector2f(1));
-                game.drawFramed.draw(new Matrix4f(game.ortho).translate(pos.x, pos.y, 0).scale(100),
+                game.drawFramed.draw(new Matrix4f(game.ortho).translate(pos.x, pos.y, 0).scale(game.gameScreenSize.x / 320.0f * 36.0f * 1.2f),
                         new Vector4f(1.0f, 1.0f, 1.0f, 1.0f),
                         6, 1, frame
                 );
             } else {
                 game.enemyTexture.bind();
-                game.drawTexture.draw(new Matrix4f(game.ortho).translate(pos.x, pos.y, 0).scale(100),
+                game.drawTexture.draw(new Matrix4f(game.ortho).translate(pos.x, pos.y, 0).scale(game.gameScreenSize.x / 320.0f * 32.0f * 1.2f),
                         new Vector4f(1.0f, 1.0f, 1.0f, 1.0f)
                 );
             }
@@ -222,7 +229,7 @@ public class MusicPlayer {
             if(accountedFor < measureTime && measuresNum < measuresToPlay.size()) measuresNum++;
             else break;
         }
-        if(measuresNum >= measuresToPlay.size()) return -1;
+        if(measuresNum >= measuresToPlay.size()) return measuresToPlay.size();
         return measuresNum;
     }
 
@@ -232,5 +239,20 @@ public class MusicPlayer {
             time += (measuresToPlay.get(i).getLength());
         }
         return time;
+    }
+
+    public ArrayList<Integer> getPreUpdateMeasures(double time) {
+        int currentMeasure = getMeasure(time);
+        if(currentMeasure + 1 >= measuresToPlay.size()) return new ArrayList<>();
+
+        ArrayList<Integer> preUpdates = new ArrayList<>();
+        double measureSum = getMeasureStart(currentMeasure + 1);
+        for(int i = currentMeasure + 1; i < measuresToPlay.size(); ++i) {
+            if(measureSum - measuresToPlay.get(i).getPreUpdateRequirement() <= time) {
+                preUpdates.add(i);
+            }
+            measureSum += (measuresToPlay.get(i).getLength());
+        }
+        return preUpdates;
     }
 }

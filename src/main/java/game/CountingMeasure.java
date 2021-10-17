@@ -9,7 +9,7 @@ public class CountingMeasure implements MeasureInfo {
     public SoundHandle sound;
 
     public CountingMeasure(Game game, String text, double length, SoundHandle sound) {
-        this.text = game.smallFont.cutOffStringBasedOnSize(text, 112 / 320.0f * game.screenSize.x);
+        this.text = game.smallFont.cutOffStringBasedOnSize(text, 112 / 320.0f * game.gameScreenSize.x);
         this.length = length;
         this.sound = sound;
     }
@@ -31,6 +31,11 @@ public class CountingMeasure implements MeasureInfo {
     }
 
     @Override
+    public void measurePreUpdate(Game game, double measureStart) {
+
+    }
+
+    @Override
     public void measureEnd(Game game) {
         game.musicPlayer.topText = "";
     }
@@ -38,5 +43,10 @@ public class CountingMeasure implements MeasureInfo {
     @Override
     public double getLength() {
         return length;
+    }
+
+    @Override
+    public double getPreUpdateRequirement() {
+        return 0;
     }
 }
