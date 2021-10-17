@@ -26,6 +26,8 @@ public class Game {
     public Texture boardTexture;
     public Texture enemyTexture;
     public Texture enemyDieTexture;
+    public Texture heartTexture;
+    public Texture heartBrokenTexture;
 
     public DrawFramed drawFramed;
     public DrawSimple drawSimple;
@@ -118,6 +120,8 @@ public class Game {
         boardTexture = Texture.makeTexture("sprites/background_2.png");
         enemyTexture = Texture.makeTexture("sprites/enemy_1.png");
         enemyDieTexture = Texture.makeTexture("sprites/enemy_1_die.png");
+        heartTexture = Texture.makeTexture("sprites/heart.png");
+        heartBrokenTexture = Texture.makeTexture("sprites/heart_broken.png");
 
         soundPlayer = new SoundPlayer();
 

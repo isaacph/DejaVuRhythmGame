@@ -92,6 +92,14 @@ public class FreeplaySystem implements GameSystem {
         game.tutorialButton.show = false;
         game.musicPlayer.show = true;
         game.musicPlayer.currentMeasure = -0.01;
+        game.musicPlayer.hearts.setHearts(6);
+        game.musicPlayer.onHitGood = () -> {};
+        game.musicPlayer.onHitBad = () -> {
+            game.musicPlayer.hearts.subtractHeart(game.musicPlayer.currentMeasure);
+        };
+        game.musicPlayer.onMiss = () -> {
+            game.musicPlayer.hearts.subtractHeart(game.musicPlayer.currentMeasure);
+        };
 
         game.musicPlayer.measuresToPlay.clear();
         game.musicPlayer.activeNotes.clear();

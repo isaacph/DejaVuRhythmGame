@@ -6,6 +6,7 @@ import org.joml.Vector4f;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.lwjgl.glfw.GLFW.*;
@@ -59,6 +60,41 @@ public class MusicPlayer {
     public boolean waiting = false;
 
     public Runnable onFinish = () -> {};
+
+    public Runnable onHitGood = () -> {};
+    public Runnable onHitBad = () -> {};
+    public Runnable onMiss = () -> {};
+
+    public static class HeartCounter {
+        private int numHearts;
+        public final Map<Integer, Double> heartLostTime = new HashMap<>();
+
+        public HeartCounter() {
+
+        }
+
+        public void setHearts(int n) {
+            this.numHearts = n;
+            this.heartLostTime.clear();
+        }
+
+        public int getHearts() {
+            return numHearts;
+        }
+
+        public void subtractHeart(double currentMeasure) {
+            subtractHearts(1, currentMeasure);
+        }
+
+        public void subtractHearts(int n, double currentMeasure) {
+            for(int i = numHearts - 1; i >= numHearts - n && i >= 0; --i) {
+                heartLostTime.put(i, currentMeasure);
+            }
+            this.numHearts = Math.max(0, numHearts - n);
+        }
+    }
+
+    public final HeartCounter hearts = new HeartCounter();
 
     public MusicPlayer(Game game) {
         this.game = game;
@@ -124,6 +160,7 @@ public class MusicPlayer {
             if(diff < -HIT_GIVE_UP) {
                 note.status = NoteStatus.MISSED;
                 note.statusLastChanged = currentMeasure;
+                this.onMiss.run();
             } else break;
         }
 
@@ -163,6 +200,11 @@ public class MusicPlayer {
                     if(die) {
                         note.status = (NoteStatus.DEAD);
                         note.statusLastChanged = (currentMeasure);
+                        if(goodness == 1) {
+                            this.onHitBad.run();
+                        } else {
+                            this.onHitGood.run();
+                        }
                     }
                     break;
                 }
@@ -195,6 +237,37 @@ public class MusicPlayer {
                 game.drawTexture.draw(new Matrix4f(game.ortho).translate(pos.x, pos.y, 0).scale(game.gameScreenSize.x / 320.0f * 32.0f * 1.2f),
                         new Vector4f(1.0f, 1.0f, 1.0f, 1.0f)
                 );
+            }
+        }
+
+        if(topText.isEmpty()) {
+            Vector2f heartPosStart = new Vector2f(120, 58);
+            for (int i = 0; i < hearts.getHearts(); ++i) {
+                Vector2f heartPos = new Vector2f(heartPosStart).add(16.0f * i, 0.0f);
+                translateToScreen(heartPos);
+                game.heartTexture.bind();
+                game.drawTexture.draw(new Matrix4f(game.ortho)
+                                .translate(heartPos.x, heartPos.y, 0)
+                                .scale(game.gameScreenSize.x / 320.0f * 16.0f),
+                        new Vector4f(1.0f));
+            }
+            List<Integer> toRemoveFromHearts = new ArrayList<>();
+            for (Integer n : hearts.heartLostTime.keySet()) {
+                double timeSinceLost = (currentMeasure - hearts.heartLostTime.get(n)) * 4 / bpm * 60;
+                if (timeSinceLost > 0.2) {
+                    toRemoveFromHearts.add(n);
+                } else {
+                    Vector2f heartPos = new Vector2f(heartPosStart).add(16.0f * n, 0.0f);
+                    translateToScreen(heartPos);
+                    game.heartBrokenTexture.bind();
+                    game.drawTexture.draw(new Matrix4f(game.ortho)
+                                    .translate(heartPos.x, heartPos.y, 0)
+                                    .scale(game.gameScreenSize.x / 320.0f * 16.0f),
+                            new Vector4f(1.0f, 1.0f, 1.0f, 1.0f - (float) timeSinceLost / 0.2f));
+                }
+            }
+            for (Integer n : toRemoveFromHearts) {
+                hearts.heartLostTime.remove(n);
             }
         }
 
