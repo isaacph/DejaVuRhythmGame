@@ -282,7 +282,7 @@ public class MusicPlayer {
         }
 
         // draw goodness
-        game.mainFont.draw("Test: " + goodness, 100, 100, new Matrix4f(game.ortho));
+        // game.mainFont.draw("Test: " + goodness, 100, 100, new Matrix4f(game.ortho));
         Vector2f topTextPos = new Vector2f(104, 39);
         translateToScreen(topTextPos);
         topTextPos.add(0, game.smallFont.getSize());

@@ -3,6 +3,10 @@ package game;
 import java.util.*;
 import java.util.function.Consumer;
 
+import org.joml.Matrix4f;
+import org.joml.Vector2f;
+import org.joml.Vector4f;
+
 import static org.lwjgl.glfw.GLFW.*;
 
 public class FreeplaySystem implements GameSystem {
@@ -76,6 +80,7 @@ public class FreeplaySystem implements GameSystem {
     private Consumer<State> onFinish;
     private Random random;
     private int phrases;
+    private int score;
 
     private boolean ended = false;
     private double endedTime = 0;
@@ -92,6 +97,7 @@ public class FreeplaySystem implements GameSystem {
 
     @Override
     public void init() {
+        score = 0;
         ended = false;
         phrases = 0;
         game.playButton.show = false;
@@ -101,17 +107,20 @@ public class FreeplaySystem implements GameSystem {
         game.musicPlayer.topText = "";
         game.musicPlayer.currentMeasure = -0.01;
         game.musicPlayer.hearts.setHearts(6);
-        game.musicPlayer.onHitGood = () -> {};
+        Runnable onGood = () -> {
+            score += 1;
+        };
         Runnable onBad = () -> {
             game.musicPlayer.hearts.subtractHeart(game.musicPlayer.currentMeasure);
             if(game.musicPlayer.hearts.getHearts() <= 0) {
                 game.musicPlayer.waiting = true;
-                game.musicPlayer.topText = "\n       Game Over\n\n Press space for menu";
+                game.musicPlayer.topText = "       Game Over\n Press space for menu";
                 game.soundPlayer.stopAllSounds();
                 ended = true;
                 endedTime = 0;
             }
         };
+        game.musicPlayer.onHitGood = onGood;
         game.musicPlayer.onHitBad = onBad;
         game.musicPlayer.onMiss = onBad;
 
@@ -205,6 +214,10 @@ public class FreeplaySystem implements GameSystem {
 
     @Override
     public void render() {
-
+        // draw the score
+        Vector2f textPos = new Vector2f(104, 70);
+        game.musicPlayer.translateToScreen(textPos);
+        textPos.add(0, game.smallFont.getSize());
+        game.smallFont.draw("Score: " + score, textPos.x, textPos.y, new Matrix4f(game.ortho), new Vector4f(1.0f, 1.0f, 1.0f, 1.0f));
     }
 }
