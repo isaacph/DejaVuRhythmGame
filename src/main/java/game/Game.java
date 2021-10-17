@@ -256,7 +256,8 @@ public class Game {
 //        Vector4f startColor = new Vector4f(0.0f, 0.0f, 0.0f, 0.0f);
 //        Vector4f endColor = new Vector4f(62.0f / 255.0f, 62.0f / 255.0f, 115.0f / 255.0f, 1.0f);
         Vector4f startColor = new Vector4f(0.0f, 0.0f, 0.0f, 1.0f);
-        Vector4f endColor = new Vector4f(137 / 255.0f / 2.0f, 100 / 255.0f / 2.0f, 61 / 255.0f / 2.0f, 1.0f);
+        float divisor = 1.7f;
+        Vector4f endColor = new Vector4f(137 / 255.0f / divisor, 100 / 255.0f / divisor, 61 / 255.0f / divisor, 1.0f);
 
         try(MemoryStack stack = MemoryStack.stackPush()) {
             FloatBuffer buffer = stack.mallocFloat(resolution * 4);
