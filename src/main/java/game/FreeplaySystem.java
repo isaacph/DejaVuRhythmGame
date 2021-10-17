@@ -3,6 +3,8 @@ package game;
 import java.util.*;
 import java.util.function.Consumer;
 
+import static org.lwjgl.glfw.GLFW.*;
+
 public class FreeplaySystem implements GameSystem {
 
     public static Map<String, ArrayList<Note>> rhythmNotes = new HashMap<>();
@@ -75,6 +77,9 @@ public class FreeplaySystem implements GameSystem {
     private Random random;
     private int phrases;
 
+    private boolean ended = false;
+    private double endedTime = 0;
+
     public FreeplaySystem(Game game) {
         this.game = game;
         this.random = new Random();
@@ -87,19 +92,28 @@ public class FreeplaySystem implements GameSystem {
 
     @Override
     public void init() {
+        ended = false;
         phrases = 0;
         game.playButton.show = false;
         game.tutorialButton.show = false;
+        game.musicPlayer.waiting = false;
         game.musicPlayer.show = true;
+        game.musicPlayer.topText = "";
         game.musicPlayer.currentMeasure = -0.01;
         game.musicPlayer.hearts.setHearts(6);
         game.musicPlayer.onHitGood = () -> {};
-        game.musicPlayer.onHitBad = () -> {
+        Runnable onBad = () -> {
             game.musicPlayer.hearts.subtractHeart(game.musicPlayer.currentMeasure);
+            if(game.musicPlayer.hearts.getHearts() <= 0) {
+                game.musicPlayer.waiting = true;
+                game.musicPlayer.topText = "\n       Game Over\n\n Press space for menu";
+                game.soundPlayer.stopAllSounds();
+                ended = true;
+                endedTime = 0;
+            }
         };
-        game.musicPlayer.onMiss = () -> {
-            game.musicPlayer.hearts.subtractHeart(game.musicPlayer.currentMeasure);
-        };
+        game.musicPlayer.onHitBad = onBad;
+        game.musicPlayer.onMiss = onBad;
 
         game.musicPlayer.measuresToPlay.clear();
         game.musicPlayer.activeNotes.clear();
@@ -111,18 +125,7 @@ public class FreeplaySystem implements GameSystem {
         game.musicPlayer.measuresToPlay.add(new CountingMeasure(game, "\n           2", 0.25f));
         game.musicPlayer.measuresToPlay.add(new CountingMeasure(game, "\n           1", 0.25f));
 
-        addMemorizationPhrase();
-        addPhrase();
-        addPhrase();
-        addPhrase();
-        addPhrase();
-        addPhrase();
-        addPhrase();
-        addPhrase();
-        addPhrase();
-        addPhrase();
-        addPhrase();
-        addPhrase();
+        //addMemorizationPhrase();
         addPhrase();
         game.musicPlayer.onFinish = () -> this.onFinish.accept(State.MENU);
     }
@@ -175,6 +178,12 @@ public class FreeplaySystem implements GameSystem {
         int currentPhrase = (int) ((game.musicPlayer.currentMeasure - 1) / 4.0);
         while(currentPhrase + 1 >= phrases) {
             addPhrase();
+        }
+        if(ended) {
+            endedTime += game.delta;
+            if(endedTime > 0.5 && glfwGetKey(game.window, GLFW_KEY_SPACE) == GLFW_PRESS) {
+                this.onFinish.accept(State.MENU);
+            }
         }
     }
 

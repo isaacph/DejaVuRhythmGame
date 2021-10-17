@@ -22,6 +22,7 @@ public class TutorialSystem implements GameSystem {
         game.tutorialButton.show = false;
         game.musicPlayer.show = true;
         game.musicPlayer.currentMeasure = -0.01;
+        game.musicPlayer.waiting = false;
         game.musicPlayer.hearts.setHearts(0);
         game.musicPlayer.onHitGood = () -> {};
         game.musicPlayer.onHitBad = () -> {};

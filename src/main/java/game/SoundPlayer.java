@@ -116,6 +116,13 @@ public class SoundPlayer {
         }
     }
 
+    public void stopAllSounds() {
+        for(int i = 0; i < sources.length; ++i) {
+            alSourceStop(sources[i]);
+            sourceEnd[i] = glfwGetTime();
+        }
+    }
+
     public void destroy() {
         for(SoundInfo info : sounds.values()) {
             alDeleteBuffers(info.buffer);
