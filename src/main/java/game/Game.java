@@ -170,7 +170,7 @@ public class Game {
             delta = currentTime - lastTime;
             lastTime = currentTime;
 
-            if(delta < 0.1) {
+            if(delta < 0.1 || true) {
 
                 double[] mx = new double[1], my = new double[1];
                 glfwGetCursorPos(window, mx, my);
@@ -242,19 +242,21 @@ public class Game {
         if(smallFont != null) {
             smallFont.cleanUp();
         }
-        smallFont = new DrawFont("font.ttf", (int) (gameScreenSize.y / 240.0f * 10.0f), 2048, 2048);
+        smallFont = new DrawFont("font.ttf", (int) (gameScreenSize.y / 240.0f * 10.0f), 4096, 4096);
         if(mainFont != null) {
             mainFont.cleanUp();
         }
-        mainFont = new DrawFont("font.ttf", (int) (gameScreenSize.y / 240.0f * 20.0f), 2048, 2048);
+        mainFont = new DrawFont("font.ttf", (int) (gameScreenSize.y / 240.0f * 20.0f), 8192, 4096);
 
-        int res = (int) (240.0f / 4.0f);
+        int res = (int) screenSize.y;
         makeGradient(res);
     }
 
     private void makeGradient(int resolution) {
+//        Vector4f startColor = new Vector4f(0.0f, 0.0f, 0.0f, 0.0f);
+//        Vector4f endColor = new Vector4f(62.0f / 255.0f, 62.0f / 255.0f, 115.0f / 255.0f, 1.0f);
         Vector4f startColor = new Vector4f(0.0f, 0.0f, 0.0f, 1.0f);
-        Vector4f endColor = new Vector4f(0.1f, 0.0f, 0.3f, 1.0f);
+        Vector4f endColor = new Vector4f(137 / 255.0f / 2.0f, 100 / 255.0f / 2.0f, 61 / 255.0f / 2.0f, 1.0f);
 
         try(MemoryStack stack = MemoryStack.stackPush()) {
             FloatBuffer buffer = stack.mallocFloat(resolution * 4);
@@ -265,10 +267,10 @@ public class Game {
 
                 // this function determines how to blend the color in terms of i (how far we are in the gradient)
                 // and resolution (the length of the gradient)
-                float fraction = 1 - (float) Math.cos((double) i / resolution * Math.PI / 2.0f);
+                float fraction = (float) Math.sqrt((float) i / resolution);
 
                 for(int j = 0; j < 4; ++j) {
-                    currentColor[j] = beginColor[j] * (1 - fraction) + destColor[j] * fraction;
+                    currentColor[j] = beginColor[j] * fraction + destColor[j] * (1 - fraction);
                 }
                 buffer.put(currentColor);
             }

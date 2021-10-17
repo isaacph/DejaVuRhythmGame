@@ -130,7 +130,7 @@ public class DrawFont {
                     int i = codePoint;
                     if(i != 32 && (s1[i] - s0[i] == 0 || t1[i] - t0[i] == 0))
                     {
-                        throw new InstantiationException("Font texture too small at char " + (char) i + "(" + i + "): " + size + " " + bmpWidth + ", " + bmpHeight);
+                        throw new InstantiationException("Font size: " + size + ": Font texture too small at char " + (char) i + "(" + i + "): " + size + " " + bmpWidth + ", " + bmpHeight);
                     }
                 }
 
