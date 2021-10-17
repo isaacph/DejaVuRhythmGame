@@ -70,6 +70,10 @@ public class MusicPlayer {
     public Runnable onHitBad = () -> {};
     public Runnable onMiss = () -> {};
 
+//    public boolean crosshair = false;
+//    public final Vector2f crosshairPosition = new Vector2f();
+//    public final Vector2f crosshairDestination = new Vector2f();
+
     public static class HeartCounter {
         private int numHearts;
         public final Map<Integer, Double> heartLostTime = new HashMap<>();

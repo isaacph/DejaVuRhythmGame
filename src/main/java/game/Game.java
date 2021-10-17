@@ -32,6 +32,7 @@ public class Game {
     public Texture heartTexture;
     public Texture heartBrokenTexture;
     public Texture gradientTexture;
+    public Texture crosshairTexture;
 
     public DrawFramed drawFramed;
     public DrawSimple drawSimple;
@@ -144,12 +145,10 @@ public class Game {
         enemyDieTexture = Texture.makeTexture("sprites/enemy_1_die.png");
         heartTexture = Texture.makeTexture("sprites/heart.png");
         heartBrokenTexture = Texture.makeTexture("sprites/heart_broken.png");
+        crosshairTexture = Texture.makeTexture("sprites/crosshair.png");
 
         soundPlayer = new SoundPlayer();
-
         musicPlayer = new MusicPlayer(this);
-
-
 
         systems.put(State.MENU, new MenuSystem(this));
         systems.put(State.TUTORIAL, new TutorialSystem(this));
