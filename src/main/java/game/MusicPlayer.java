@@ -19,15 +19,15 @@ public class MusicPlayer {
     public final Map<Integer, Vector2f> notePosition;
 
     private Vector2f[] notePos = new Vector2f[] {
-            new Vector2f(0, 0),
-            new Vector2f(50, 0),
-            new Vector2f(100, 0),
-            new Vector2f(0, 50),
-            new Vector2f(50, 50),
-            new Vector2f(100, 50),
-            new Vector2f(0, 100),
-            new Vector2f(50, 100),
-            new Vector2f(100, 100),
+            new Vector2f(122, 128),
+            new Vector2f(122 + 40, 128),
+            new Vector2f(122 + 80, 128),
+            new Vector2f(122, 128 + 40),
+            new Vector2f(122 + 40, 128 + 40),
+            new Vector2f(122 + 80, 128 + 40),
+            new Vector2f(122, 128 + 80),
+            new Vector2f(122 + 40, 128 + 80),
+            new Vector2f(122 + 80, 128 + 80),
     };
 
     public ArrayList<MeasureInfo> measuresToPlay = new ArrayList<>();
