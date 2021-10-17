@@ -20,7 +20,7 @@ public class MenuSystem implements GameSystem {
         logoTexture = Texture.makeTexture("sprites/logo.png");
         game.tutorialButton.show = true;
         game.playButton.show = true;
-        game.musicPlayer.show = false;
+        game.musicPlayer.hide();
         game.playButton.onPressed = () -> {
             this.finishFunc.accept(State.PLAY);
         };

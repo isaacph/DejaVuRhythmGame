@@ -102,11 +102,9 @@ public class FreeplaySystem implements GameSystem {
         phrases = 0;
         game.playButton.show = false;
         game.tutorialButton.show = false;
-        game.musicPlayer.waiting = false;
-        game.musicPlayer.show = true;
-        game.musicPlayer.topText = "";
-        game.musicPlayer.currentMeasure = -0.01;
+        game.musicPlayer.init();
         game.musicPlayer.hearts.setHearts(6);
+
         Runnable onGood = () -> {
             score += 1;
         };
@@ -124,10 +122,6 @@ public class FreeplaySystem implements GameSystem {
         game.musicPlayer.onHitGood = onGood;
         game.musicPlayer.onHitBad = onBad;
         game.musicPlayer.onMiss = onBad;
-
-        game.musicPlayer.measuresToPlay.clear();
-        game.musicPlayer.activeNotes.clear();
-        game.musicPlayer.goodness = 0;
 
         game.musicPlayer.measuresToPlay.add(new WaitMeasure(game, "Press the space key to start."));
         game.musicPlayer.measuresToPlay.add(new CountingMeasure(game, "\n           4", 0.25f, game.musicPlayer.cueSound));

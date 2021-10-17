@@ -20,17 +20,7 @@ public class TutorialSystem implements GameSystem {
         System.out.println("Tutorial init");
         game.playButton.show = false;
         game.tutorialButton.show = false;
-        game.musicPlayer.show = true;
-        game.musicPlayer.currentMeasure = -0.01;
-        game.musicPlayer.waiting = false;
-        game.musicPlayer.hearts.setHearts(0);
-        game.musicPlayer.onHitGood = () -> {};
-        game.musicPlayer.onHitBad = () -> {};
-        game.musicPlayer.onMiss = () -> {};
-
-        game.musicPlayer.measuresToPlay.clear();
-        game.musicPlayer.activeNotes.clear();
-        game.musicPlayer.goodness = 0;
+        game.musicPlayer.init();
 
         {
             WaitMeasure measure = new WaitMeasure(game, "Press the space key to start.");

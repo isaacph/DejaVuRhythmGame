@@ -70,9 +70,10 @@ public class MusicPlayer {
     public Runnable onHitBad = () -> {};
     public Runnable onMiss = () -> {};
 
-//    public boolean crosshair = false;
-//    public final Vector2f crosshairPosition = new Vector2f();
-//    public final Vector2f crosshairDestination = new Vector2f();
+    public boolean crosshair = false;
+    public final Vector2f crosshairPosition = new Vector2f();
+    public final Vector2f crosshairDestination = new Vector2f();
+    public double crosshairLastMove = 0.0f;
 
     public static class HeartCounter {
         private int numHearts;
@@ -130,6 +131,28 @@ public class MusicPlayer {
         }
 
         currentMeasure = -0.01f; // currentMeasure has to start less than 0
+    }
+
+    public void init() {
+        game.musicPlayer.show = true;
+        game.musicPlayer.currentMeasure = -0.01;
+        game.musicPlayer.waiting = false;
+        game.musicPlayer.hearts.setHearts(0);
+        game.musicPlayer.onHitGood = () -> {};
+        game.musicPlayer.onHitBad = () -> {};
+        game.musicPlayer.onMiss = () -> {};
+
+        game.musicPlayer.measuresToPlay.clear();
+        game.musicPlayer.activeNotes.clear();
+        game.musicPlayer.goodness = 0;
+        this.crosshair = true;
+        crosshairPosition.set(game.screenSize).div(2);
+        crosshairDestination.set(crosshairPosition);
+    }
+
+    public void hide() {
+        game.musicPlayer.show = false;
+        crosshair = false;
     }
 
     public void update() {
@@ -221,12 +244,33 @@ public class MusicPlayer {
                         } else {
                             this.onHitGood.run();
                         }
+                        Vector2f pos = new Vector2f(this.notePosition.get(note.note.position));
+                        translateToScreen(pos);
+                        crosshairDestination.set(pos);
+                        crosshairLastMove = game.currentTime;
+                        crosshair = true;
                     }
                     break;
                 }
             }
         }
         keyDown = glfwGetKey(game.window, GLFW_KEY_SPACE) == GLFW_PRESS;
+
+        if(crosshair) {
+            if(game.currentTime - this.crosshairLastMove > 0.6) {
+                crosshair = false;
+            } else {
+                Vector2f diff = new Vector2f(crosshairDestination).sub(crosshairPosition);
+                float dist = diff.length();
+                float move = (float) game.delta * game.gameScreenSize.y / 240.0f * 2000.0f;
+                diff.normalize(move);
+                if (move > dist) {
+                    crosshairPosition.set(crosshairDestination);
+                } else {
+                    crosshairPosition.add(diff);
+                }
+            }
+        }
     }
 
     public void render() {
@@ -261,6 +305,16 @@ public class MusicPlayer {
                         new Vector4f(1.0f, 1.0f, 1.0f, 1.0f)
                 );
             }
+        }
+
+        if(crosshair) {
+            Vector2f pos = crosshairPosition;
+            game.crosshairTexture.bind();
+            game.drawTexture.draw(
+                    new Matrix4f(game.ortho)
+                            .translate(pos.x, pos.y, 0)
+                            .scale(game.gameScreenSize.y / 240.0f * 32),
+                    new Vector4f(1));
         }
 
         if(topText.isEmpty()) {
