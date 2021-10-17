@@ -25,7 +25,9 @@ public class Game {
 
     public Texture boardTexture;
     public Texture enemyTexture;
+    public Texture enemyDieTexture;
 
+    public DrawFramed drawFramed;
     public DrawSimple drawSimple;
     public DrawTexture drawTexture;
     public DrawFont mainFont;
@@ -109,10 +111,12 @@ public class Game {
 
         drawSimple = new DrawSimple();
         drawTexture = new DrawTexture();
+        drawFramed = new DrawFramed();
         mainFont = new DrawFont("font.ttf", 32, 512, 512);
         bigFont = new DrawFont("font.ttf", 80, 1024, 512);
         boardTexture = Texture.makeTexture("sprites/background_2.png");
         enemyTexture = Texture.makeTexture("sprites/enemy_1.png");
+        enemyDieTexture = Texture.makeTexture("sprites/enemy_1_die.png");
 
         soundPlayer = new SoundPlayer();
 
@@ -174,6 +178,7 @@ public class Game {
 
         drawSimple.destroy();
         drawTexture.destroy();
+        drawFramed.destroy();
         mainFont.cleanUp();
         soundPlayer.destroy();
     }

@@ -29,6 +29,8 @@ public class GameplayMeasure implements MeasureInfo {
             if(game.musicPlayer.currentMeasure >= measureStartTime + note.timeInMeasure / 4.0f) {
                 game.musicPlayer.activeNotes.add(note);
                 game.musicPlayer.playMusicTime.put(note, (float) measureStartTime + note.timeInMeasure / 4.0f + note.hitTime);
+                game.musicPlayer.activeNoteStatus.put(note, NoteStatus.READY);
+                game.musicPlayer.activeNoteStatusTime.put(note, game.musicPlayer.currentMeasure);
                 System.out.println((float) measureStartTime + note.timeInMeasure / 4.0f + note.hitTime);
                 noteInfoPos++;
                 added = true;

@@ -5,7 +5,6 @@ import org.joml.Vector2f;
 import org.joml.Vector4f;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -38,6 +37,8 @@ public class MusicPlayer {
     public int noteInfoPos = 0;
     public ArrayList<Note> activeNotes = new ArrayList<>();
     public Map<Note, Float> playMusicTime = new HashMap<>();
+    public Map<Note, NoteStatus> activeNoteStatus = new HashMap<>();
+    public Map<Note, Double> activeNoteStatusTime = new HashMap<>();
 
     public int goodness = 0;
 
@@ -104,33 +105,59 @@ public class MusicPlayer {
             }
         }
 
-        while(!activeNotes.isEmpty()) {
-            double diff = (playMusicTime.get(activeNotes.get(0)) - currentMeasure) / bpm * 60.0;
+        // change notes to missed
+        for(Note note : activeNotes) {
+            if(activeNoteStatus.get(note) != NoteStatus.READY) continue;
+            double diff = (playMusicTime.get(note) - currentMeasure) / bpm * 60.0;
             if(diff < -HIT_GIVE_UP) {
-                activeNotes.remove(0);
+                activeNoteStatus.put(note, NoteStatus.MISSED);
             } else break;
+        }
+
+        // removed finished notes
+        for(int i = activeNotes.size() - 1; i >= 0; --i) {
+            Note note = activeNotes.get(i);
+            if(activeNoteStatus.get(note) == NoteStatus.DEAD) {
+                if((int) (1 + (currentMeasure - activeNoteStatusTime.get(note)) * 20.0f) >= 6) {
+                    activeNotes.remove(i);
+                    activeNoteStatusTime.remove(note);
+                    activeNoteStatus.remove(note);
+                    playMusicTime.remove(note);
+                }
+            } else if(activeNoteStatus.get(note) == NoteStatus.MISSED) {
+                activeNotes.remove(i);
+                activeNoteStatusTime.remove(note);
+                activeNoteStatus.remove(note);
+                playMusicTime.remove(note);
+            }
         }
 
         if(glfwGetKey(game.window, GLFW_KEY_SPACE) == GLFW_PRESS) {
             if(!keyDown) {
-                if (!activeNotes.isEmpty()) {
-                    Note note = activeNotes.get(0);
+                for (Note note : activeNotes) {
+                    if(activeNoteStatus.get(note) != NoteStatus.READY) continue;
                     double diff = (playMusicTime.get(note) - currentMeasure) / bpm * 60.0;
+                    boolean die = false;
                     if(diff > HIT_GIVE_UP) {
                         goodness = 0;
                     }
                     else if (Math.abs(diff) <= HIT_GIVE_UP && Math.abs(diff) > HIT_LENIENCY) {
                         goodness = 1;
-                        activeNotes.remove(0);
+                        die = true;
                     } else  if(Math.abs(diff) <= HIT_LENIENCY){
                         goodness = 2;
-                        activeNotes.remove(0);
+                        die = true;
                     } else {
                         goodness = 0;
-                        activeNotes.remove(0);
+                        die = true;
                     }
                     System.out.println("Hit note with diff " + diff + " at time " + currentMeasure);
                     game.soundPlayer.play(hitSound, 0.1f);
+                    if(die) {
+                        activeNoteStatus.put(note, NoteStatus.DEAD);
+                        activeNoteStatusTime.put(note, currentMeasure);
+                    }
+                    break;
                 }
             }
         }
@@ -143,8 +170,25 @@ public class MusicPlayer {
         for(Note note : activeNotes) {
             Vector2f pos = new Vector2f(notePosition.get(note.position));
             translateToScreen(pos);
-            game.enemyTexture.bind();
-            game.drawTexture.draw(new Matrix4f(game.ortho).translate(pos.x, pos.y, 0).scale(100), new Vector4f(1.0f, 1.0f, 1.0f, 1.0f));
+
+            if(activeNoteStatus.get(note) == NoteStatus.DEAD) {
+                double timeElapsed = currentMeasure - activeNoteStatusTime.get(note);
+                int frame = 1 + (int) (timeElapsed * 20.0);
+
+                game.enemyDieTexture.bind();
+//            game.drawFramed.draw(new Matrix4f(game.ortho).translate(pos.x, pos.y, 0).scale(100),
+//                    new Vector4f(1.0f, 1.0f, 1.0f, 1.0f),
+//                    new Vector2f(0), new Vector2f(1));
+                game.drawFramed.draw(new Matrix4f(game.ortho).translate(pos.x, pos.y, 0).scale(100),
+                        new Vector4f(1.0f, 1.0f, 1.0f, 1.0f),
+                        6, 1, frame
+                );
+            } else {
+                game.enemyTexture.bind();
+                game.drawTexture.draw(new Matrix4f(game.ortho).translate(pos.x, pos.y, 0).scale(100),
+                        new Vector4f(1.0f, 1.0f, 1.0f, 1.0f)
+                );
+            }
         }
 
         Vector4f col = new Vector4f(1.0f, 1.0f, 1.0f, 1.0f);
