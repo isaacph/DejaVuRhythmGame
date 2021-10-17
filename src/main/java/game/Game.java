@@ -2,11 +2,14 @@ package game;
 
 import org.joml.Matrix4f;
 import org.joml.Vector2f;
+import org.joml.Vector2i;
 import org.joml.Vector4f;
 import org.lwjgl.*;
 import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.*;
+import org.lwjgl.system.MemoryStack;
 
+import java.nio.FloatBuffer;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -28,6 +31,7 @@ public class Game {
     public Texture enemyDieTexture;
     public Texture heartTexture;
     public Texture heartBrokenTexture;
+    public Texture gradientTexture;
 
     public DrawFramed drawFramed;
     public DrawSimple drawSimple;
@@ -181,6 +185,10 @@ public class Game {
 
             glClear(GL_COLOR_BUFFER_BIT); // clear the framebuffer
 
+            // draw gradient
+            gradientTexture.bind();
+            drawTexture.draw(new Matrix4f().scale(2), new Vector4f(1));
+
             if(musicPlayer.show) {
                 boardTexture.bind();
                 drawTexture.draw(new Matrix4f(ortho).translate(screenSize.x / 2.0f, screenSize.y / 2.0f, 0).scale(gameScreenSize.x, gameScreenSize.y, 0), new Vector4f(1));
@@ -239,5 +247,36 @@ public class Game {
             mainFont.cleanUp();
         }
         mainFont = new DrawFont("font.ttf", (int) (gameScreenSize.y / 240.0f * 20.0f), 2048, 2048);
+
+        int res = (int) (240.0f / 4.0f);
+        makeGradient(res);
+    }
+
+    private void makeGradient(int resolution) {
+        Vector4f startColor = new Vector4f(0.0f, 0.0f, 0.0f, 1.0f);
+        Vector4f endColor = new Vector4f(0.1f, 0.0f, 0.3f, 1.0f);
+
+        try(MemoryStack stack = MemoryStack.stackPush()) {
+            FloatBuffer buffer = stack.mallocFloat(resolution * 4);
+            float[] beginColor = {startColor.x, startColor.y, startColor.z, startColor.w};
+            float[] currentColor = {startColor.x, startColor.y, startColor.z, startColor.w};
+            float[] destColor = {endColor.x, endColor.y, endColor.z, endColor.w};
+            for(int i = 0; i < resolution; ++i) {
+
+                // this function determines how to blend the color in terms of i (how far we are in the gradient)
+                // and resolution (the length of the gradient)
+                float fraction = 1 - (float) Math.cos((double) i / resolution * Math.PI / 2.0f);
+
+                for(int j = 0; j < 4; ++j) {
+                    currentColor[j] = beginColor[j] * (1 - fraction) + destColor[j] * fraction;
+                }
+                buffer.put(currentColor);
+            }
+            buffer.flip();
+            if(this.gradientTexture != null) {
+                this.gradientTexture.destroy();
+            }
+            this.gradientTexture = new Texture(buffer, new Vector2i(1, resolution), new Texture.Settings());
+        }
     }
 }

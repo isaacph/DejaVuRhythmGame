@@ -8,6 +8,7 @@ import org.lwjgl.system.MemoryUtil;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
@@ -15,6 +16,7 @@ import java.nio.channels.ReadableByteChannel;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL12.GL_CLAMP_TO_EDGE;
 import static org.lwjgl.opengl.GL13.GL_CLAMP_TO_BORDER;
+import static org.lwjgl.opengl.GL30.glGenerateMipmap;
 import static org.lwjgl.stb.STBImage.stbi_load_from_memory;
 
 public class Texture {
@@ -33,6 +35,18 @@ public class Texture {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, settings.wrap);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, settings.filter);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, settings.filter);
+        glGenerateMipmap(GL_TEXTURE_2D);
+    }
+
+    public Texture(FloatBuffer data, Vector2i size, Settings settings) {
+        handle = glGenTextures();
+        glBindTexture(GL_TEXTURE_2D, handle);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, size.x, size.y, 0, GL_RGBA, GL_FLOAT, data);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, settings.wrap);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, settings.wrap);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, settings.filter);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, settings.filter);
+        glGenerateMipmap(GL_TEXTURE_2D);
     }
 
     public void bind() {
