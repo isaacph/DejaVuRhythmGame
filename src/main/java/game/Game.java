@@ -56,6 +56,10 @@ public class Game {
     public MenuButton playButton;
     public MenuButton tutorialButton;
 
+    private State prevTransitionState, nextTransitionState;
+    private boolean transitioning = false;
+    private double transitionStart = 0;
+
     public void run() {
         System.out.println("Hello LWJGL " + Version.getVersion() + "!");
 
@@ -152,8 +156,13 @@ public class Game {
         systems.put(State.PLAY, new FreeplaySystem(this));
 
         systems.forEach((state, gameSystem) -> gameSystem.setFinishedCallback((nextState) -> {
-            currentSystem = nextState;
-            systems.get(currentSystem).init();
+            prevTransitionState = currentSystem;
+            nextTransitionState = nextState;
+            transitioning = true;
+            transitionStart = currentTime;
+
+//            currentSystem = nextState;
+//            systems.get(currentSystem).init();
         }));
         currentSystem = State.MENU;
         systems.get(this.currentSystem).init();
@@ -183,6 +192,18 @@ public class Game {
                 tutorialButton.update();
             }
 
+            if(transitioning) {
+                if(this.currentSystem == this.prevTransitionState) {
+                    if(this.currentTime - transitionStart > 0.2f) {
+                        this.currentSystem = this.nextTransitionState;
+                        systems.get(currentSystem).init();
+                    }
+                }
+                if(this.currentTime - transitionStart > 0.4f) {
+                    this.transitioning = false;
+                }
+            }
+
             glClear(GL_COLOR_BUFFER_BIT); // clear the framebuffer
 
             // draw gradient
@@ -199,6 +220,18 @@ public class Game {
             musicPlayer.render();
 
             systems.get(currentSystem).render();
+
+            if(transitioning) {
+                double timeDiff = currentTime - transitionStart;
+                double alpha;
+                if(timeDiff < 0.2f) {
+                    alpha = timeDiff / 0.2f;
+                } else {
+                    alpha = 1 - (timeDiff - 0.2f) / 0.2f;
+                }
+                this.gradientTexture.bind();
+                this.drawTexture.draw(new Matrix4f().scale(2), new Vector4f(1, 1, 1, (float) alpha));
+            }
 
             //mainFont.draw("hello fon wotrld", 40, 40, new Matrix4f(ortho));
 
