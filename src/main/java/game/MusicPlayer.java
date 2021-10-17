@@ -52,6 +52,10 @@ public class MusicPlayer {
     public static final double HIT_LENIENCY = 0.05;
     public static final double HIT_GIVE_UP = 0.12;
 
+    public static final double POP_UP_LENGTH = 0.05;
+    public static final double POP_DOWN_LENGTH = 0.05;
+
+
     public String topText = "";
 
     public SoundHandle hitSound;
@@ -82,6 +86,7 @@ public class MusicPlayer {
         public int getHearts() {
             return numHearts;
         }
+
 
         public void subtractHeart(double currentMeasure) {
             subtractHearts(1, currentMeasure);
@@ -177,7 +182,9 @@ public class MusicPlayer {
                     activeNotes.remove(i);
                 }
             } else if(note.status == NoteStatus.MISSED) {
-                activeNotes.remove(i);
+                if((currentMeasure - note.statusLastChanged) > POP_DOWN_LENGTH) {
+                    activeNotes.remove(i);
+                }
             }
         }
 
@@ -237,9 +244,16 @@ public class MusicPlayer {
                         new Vector4f(1.0f, 1.0f, 1.0f, 1.0f),
                         6, 1, frame
                 );
-            } else {
+            } else { // if missed or ready
                 game.enemyTexture.bind();
-                game.drawTexture.draw(new Matrix4f(game.ortho).translate(pos.x, pos.y, 0).scale(game.gameScreenSize.x / 320.0f * 32.0f * 1.2f),
+                float mainSize = game.gameScreenSize.x / 320.0f * 32.0f * 1.2f;
+                float popup = 1.0f;
+                if(note.status == NoteStatus.READY) {
+                    popup = (float) Math.min(1, (currentMeasure - note.statusLastChanged) / POP_UP_LENGTH);
+                } else if(note.status == NoteStatus.MISSED){
+                    popup = (float) Math.max(0, 1 - (currentMeasure - note.statusLastChanged) / POP_DOWN_LENGTH);
+                }
+                game.drawTexture.draw(new Matrix4f(game.ortho).translate(pos.x, pos.y + mainSize / 2.0f * (1 - popup), 0).scale(mainSize, mainSize * popup, 0),
                         new Vector4f(1.0f, 1.0f, 1.0f, 1.0f)
                 );
             }
