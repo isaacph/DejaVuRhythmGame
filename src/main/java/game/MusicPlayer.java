@@ -56,6 +56,7 @@ public class MusicPlayer {
 
     public SoundHandle hitSound;
     public SoundHandle cueSound;
+    public SoundHandle missSound;
 
     public boolean waiting = false;
 
@@ -107,6 +108,7 @@ public class MusicPlayer {
 
         // load sounds
         hitSound = game.soundPlayer.loadSound("soundfx/clap.ogg");
+        missSound = game.soundPlayer.loadSound("soundfx/glass.ogg");
         cueSound = game.soundPlayer.loadSound("music/cue.ogg");
         for(String rhythm : RHYTHM_NAMES) {
             sounds.put(rhythm, game.soundPlayer.loadSound("music/Rhythm_" + rhythm + ".ogg"));
