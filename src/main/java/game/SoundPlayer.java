@@ -67,6 +67,7 @@ public class SoundPlayer {
 
         System.out.print(sound + ": ");
         System.out.println(sounds.get(sound).buffer + ", " + sources[minSourceIndex]);
+        alSourceStop(sources[minSourceIndex]);
         alSourceUnqueueBuffers(sources[minSourceIndex]);
         alSourcei(sources[minSourceIndex], AL_BUFFER, sounds.get(sound).buffer);
         alSourcePlay(sources[minSourceIndex]);

@@ -105,6 +105,17 @@ public class FreeplaySystem implements GameSystem {
 
         addMemorizationPhrase();
         addPhrase();
+        addPhrase();
+        addPhrase();
+        addPhrase();
+        addPhrase();
+        addPhrase();
+        addPhrase();
+        addPhrase();
+        addPhrase();
+        addPhrase();
+        addPhrase();
+        addPhrase();
         game.musicPlayer.onFinish = () -> this.onFinish.accept(State.MENU);
     }
 
