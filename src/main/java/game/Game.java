@@ -79,10 +79,19 @@ public class Game {
         // Configure GLFW
         glfwDefaultWindowHints(); // optional, the current window hints are already the default
         glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE); // the window will stay hidden after creation
-        glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE); // the window will be resizable
+        glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE); // the window will be resizable
+
+        long monitor = glfwGetPrimaryMonitor();
+        GLFWVidMode mode = glfwGetVideoMode(monitor);
+        if(mode == null) throw new IllegalStateException("Could not get video mode of primary monitor");
+
+        glfwWindowHint(GLFW_RED_BITS, mode.redBits());
+        glfwWindowHint(GLFW_GREEN_BITS, mode.greenBits());
+        glfwWindowHint(GLFW_BLUE_BITS, mode.blueBits());
+        glfwWindowHint(GLFW_REFRESH_RATE, mode.refreshRate());
 
         // Create the window
-        window = glfwCreateWindow(800, 600, "Hello World!", NULL, NULL);
+        window = glfwCreateWindow(mode.width(), mode.height(), "Hello World!", monitor, NULL);
         if ( window == NULL )
             throw new RuntimeException("Failed to create the GLFW window");
 
@@ -111,7 +120,7 @@ public class Game {
         });
         playButton = new MenuButton(this, new Vector2f(0), new Vector2f(200, 100), "Play");
         tutorialButton = new MenuButton(this, new Vector2f(0), new Vector2f(200, 100), "Tutorial");
-        this.onWindowSize(800, 600);
+        this.onWindowSize(mode.width(), mode.height());
 
         drawSimple = new DrawSimple();
         drawTexture = new DrawTexture();

@@ -112,7 +112,6 @@ public class FreeplaySystem implements GameSystem {
         };
         Runnable onBad = () -> {
             game.musicPlayer.hearts.subtractHeart(game.musicPlayer.currentMeasure);
-            game.soundPlayer.play(game.musicPlayer.missSound, 0);
             if(game.musicPlayer.hearts.getHearts() <= 0) {
                 game.musicPlayer.waiting = true;
                 game.musicPlayer.topText = "       Game Over\n Press space for menu";
@@ -120,6 +119,7 @@ public class FreeplaySystem implements GameSystem {
                 ended = true;
                 endedTime = 0;
             }
+            game.soundPlayer.play(game.musicPlayer.missSound, 0); // this has to go after stopAllSounds()
         };
         game.musicPlayer.onHitGood = onGood;
         game.musicPlayer.onHitBad = onBad;
@@ -183,7 +183,7 @@ public class FreeplaySystem implements GameSystem {
                 game.musicPlayer.measuresToPlay.add(fastMeasure);
             }
         }
-        // now we do the second phrase (measures 5-8)
+//        // now we do the second phrase (measures 5-8)
         for(int m = 0; m < 2; ++m) {
             for(int i = 4; i < 8; ++i) {
                 String rhythm = rhythms[random.nextInt(4)];
