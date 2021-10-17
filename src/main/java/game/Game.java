@@ -114,7 +114,6 @@ public class Game {
         drawSimple = new DrawSimple();
         drawTexture = new DrawTexture();
         drawFramed = new DrawFramed();
-        mainFont = new DrawFont("font.ttf", 32, 512, 512);
         bigFont = new DrawFont("font.ttf", 80, 1024, 512);
         boardTexture = Texture.makeTexture("sprites/background_2.png");
         enemyTexture = Texture.makeTexture("sprites/enemy_1.png");
@@ -199,8 +198,6 @@ public class Game {
         glViewport(0, 0, x, y);
         this.ortho.identity().ortho(0, x, y, 0, -1, 1);
         this.screenSize.set(x, y);
-        this.playButton.center.set(x / 2.0f, y * 6.5f / 8.0f);
-        this.tutorialButton.center.set(x / 2.0f, y * 5.0f / 8.0f);
         boolean smallerX = screenSize.x / 4 < screenSize.y / 3;
         float width, height;
         if(smallerX) {
@@ -212,6 +209,17 @@ public class Game {
         }
         this.gameScreenSize.set(width, height);
         this.gameScreenCorner.set(screenSize.x / 2.0f - width / 2.0f, screenSize.y / 2.0f - height / 2.0f);
-        smallFont = new DrawFont("font.ttf", (int) (screenSize.y / 240.0f * 10.0f), 2048, 2048);
+        this.playButton.center.set(gameScreenCorner.x + width / 2.0f, gameScreenCorner.y + height * 5.0f / 8.0f);
+        this.playButton.scale.set(width * 100.0f / 320.0f, height * 30.0f / 240.0f);
+        this.tutorialButton.center.set(gameScreenCorner.x + width / 2.0f, gameScreenCorner.y + height * 6.5f / 8.0f);
+        this.tutorialButton.scale.set(width * 100.0f / 320.0f, height * 30.0f / 240.0f);
+        if(smallFont != null) {
+            smallFont.cleanUp();
+        }
+        smallFont = new DrawFont("font.ttf", (int) (gameScreenSize.y / 240.0f * 10.0f), 2048, 2048);
+        if(mainFont != null) {
+            mainFont.cleanUp();
+        }
+        mainFont = new DrawFont("font.ttf", (int) (gameScreenSize.y / 240.0f * 20.0f), 2048, 2048);
     }
 }

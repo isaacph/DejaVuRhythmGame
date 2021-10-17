@@ -41,6 +41,6 @@ public class MenuButton {
         if(!show) return;
         game.drawSimple.draw(new Matrix4f(game.ortho).translate(center.x, center.y, 0).scale(scale.x, scale.y, 0), new Vector4f(1));
         float textWidth = game.mainFont.textWidth(text);
-        game.mainFont.draw(text, center.x - textWidth / 2, center.y + 10.0f, new Matrix4f(game.ortho), new Vector4f(0, 0, 0, 1));
+        game.mainFont.draw(text, center.x - textWidth / 2, center.y + game.mainFont.getSize() / 2.0f * 0.9f, new Matrix4f(game.ortho), new Vector4f(0, 0, 0, 1));
     }
 }
