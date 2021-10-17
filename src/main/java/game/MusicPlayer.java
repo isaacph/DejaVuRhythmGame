@@ -114,6 +114,9 @@ public class MusicPlayer {
                 sounds.put(melody + rhythm, game.soundPlayer.loadSound("music/Melody_" + melody + rhythm + ".ogg"));
             }
         }
+        for(int chord : MELODY_NUMBERS) {
+            sounds.put("chord_" + chord, game.soundPlayer.loadSound("music/Chords_" + chord + ".ogg"));
+        }
 
         currentMeasure = -0.01f; // currentMeasure has to start less than 0
     }
