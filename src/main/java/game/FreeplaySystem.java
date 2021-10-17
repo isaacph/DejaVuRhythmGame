@@ -125,7 +125,7 @@ public class FreeplaySystem implements GameSystem {
         game.musicPlayer.measuresToPlay.add(new CountingMeasure(game, "\n           2", 0.25f));
         game.musicPlayer.measuresToPlay.add(new CountingMeasure(game, "\n           1", 0.25f));
 
-        //addMemorizationPhrase();
+        addMemorizationPhrase();
         addPhrase();
         game.musicPlayer.onFinish = () -> this.onFinish.accept(State.MENU);
     }
@@ -158,7 +158,23 @@ public class FreeplaySystem implements GameSystem {
 
     private void addPhrase() {
         String[] rhythms = {"A", "B", "C", "D"};
-        for(int i = 0; i < 4; ++i) {
+        // do the first four measures twice
+        for(int m = 0; m < 2; ++m) {
+            for(int i = 0; i < 4; ++i) {
+                String rhythm = rhythms[random.nextInt(4)];
+                int melody = i + 1;
+                int chord = i + 1;
+
+                GameplayMeasure fastMeasure = new GameplayMeasure(0.25f);
+                fastMeasure.startingSounds.add(rhythm);
+                fastMeasure.startingSounds.add(melody + rhythm);
+                fastMeasure.startingSounds.add("chord_" + chord);
+                fastMeasure.noteInfo.addAll(withCombinedSpawn(rhythmNotes.get(rhythm), -0.25f));
+                game.musicPlayer.measuresToPlay.add(fastMeasure);
+            }
+        }
+        // now we do the second phrase (measures 5-8) once
+        for(int i = 4; i < 8; ++i) {
             String rhythm = rhythms[random.nextInt(4)];
             int melody = i + 1;
             int chord = i + 1;
