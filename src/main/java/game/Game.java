@@ -76,10 +76,12 @@ public class Game {
         if ( !glfwInit() )
             throw new IllegalStateException("Unable to initialize GLFW");
 
+        boolean fullScreen = true;
+
         // Configure GLFW
         glfwDefaultWindowHints(); // optional, the current window hints are already the default
         glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE); // the window will stay hidden after creation
-        glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE); // the window will be resizable
+        glfwWindowHint(GLFW_RESIZABLE, fullScreen ? GLFW_FALSE : GLFW_TRUE); // the window will be resizable
 
         long monitor = glfwGetPrimaryMonitor();
         GLFWVidMode mode = glfwGetVideoMode(monitor);
@@ -90,8 +92,11 @@ public class Game {
         glfwWindowHint(GLFW_BLUE_BITS, mode.blueBits());
         glfwWindowHint(GLFW_REFRESH_RATE, mode.refreshRate());
 
+        if(fullScreen) this.screenSize.set(mode.width(), mode.height());
+        else this.screenSize.set(800, 600);
+
         // Create the window
-        window = glfwCreateWindow(mode.width(), mode.height(), "Hello World!", monitor, NULL);
+        window = glfwCreateWindow((int) screenSize.x, (int) screenSize.y, "Hello World!", fullScreen ? monitor : NULL, NULL);
         if ( window == NULL )
             throw new RuntimeException("Failed to create the GLFW window");
 
@@ -120,7 +125,7 @@ public class Game {
         });
         playButton = new MenuButton(this, new Vector2f(0), new Vector2f(200, 100), "Play");
         tutorialButton = new MenuButton(this, new Vector2f(0), new Vector2f(200, 100), "Tutorial");
-        this.onWindowSize(mode.width(), mode.height());
+        this.onWindowSize((int) screenSize.x, (int) screenSize.y);
 
         drawSimple = new DrawSimple();
         drawTexture = new DrawTexture();
