@@ -29,22 +29,24 @@ public class TutorialSystem implements GameSystem {
             WaitMeasure measure = new WaitMeasure(game, "Press the space key to start.");
             game.musicPlayer.measuresToPlay.add(measure);
         }
-        game.musicPlayer.measuresToPlay.add(new CountingMeasure(game, "Look at the pattern, and listen to the rhythm", 1.0f));
-        game.musicPlayer.measuresToPlay.add(new CountingMeasure(game, "\n           3", 0.25f));
-        game.musicPlayer.measuresToPlay.add(new CountingMeasure(game, "\n           2", 0.25f));
-        game.musicPlayer.measuresToPlay.add(new CountingMeasure(game, "\n           1", 0.25f));
+        game.musicPlayer.measuresToPlay.add(new CountingMeasure(game, "Look at the pattern, and listen to the rhythm", 1.0));
+        // game.musicPlayer.measuresToPlay.add(new CountingMeasure(game, "\n           4", 0.25f, game.musicPlayer.cueSound));
+        // game.musicPlayer.measuresToPlay.add(new CountingMeasure(game, "\n           3", 0.25f));
+        // game.musicPlayer.measuresToPlay.add(new CountingMeasure(game, "\n           2", 0.25f));
+        // game.musicPlayer.measuresToPlay.add(new CountingMeasure(game, "\n           1", 0.25f));
         {
             GameplayMeasure measure = new GameplayMeasure();
-            measure.startingSounds.add("A");
+            // measure.startingSounds.add("A");
             measure.startingSounds.add("1A");
-            measure.noteInfo.add(new Note(0.0f, 2.0f, 1));
-            measure.noteInfo.add(new Note(1.0f, 2.0f, 3));
-            measure.noteInfo.add(new Note(2.0f, 2.0f, 5));
-            measure.noteInfo.add(new Note(3.0f, 2.0f, 7));
+            measure.noteInfo.add(new Note(0.0f, 2.25f, 1));
+            measure.noteInfo.add(new Note(1.0f, 2.25f, 3));
+            measure.noteInfo.add(new Note(2.0f, 2.25f, 5));
+            measure.noteInfo.add(new Note(3.0f, 2.25f, 7));
             Collections.sort(measure.noteInfo);
             game.musicPlayer.measuresToPlay.add(measure);
         }
         game.musicPlayer.measuresToPlay.add(new CountingMeasure(game, "Now tap the rhythm", 0.25f));
+        game.musicPlayer.measuresToPlay.add(new CountingMeasure(game, "Now tap the rhythm\n              4", 0.25f, game.musicPlayer.cueSound));
         game.musicPlayer.measuresToPlay.add(new CountingMeasure(game, "Now tap the rhythm\n              3", 0.25f));
         game.musicPlayer.measuresToPlay.add(new CountingMeasure(game, "Now tap the rhythm\n              2", 0.25f));
         game.musicPlayer.measuresToPlay.add(new CountingMeasure(game, "Now tap the rhythm\n              1", 0.25f));
