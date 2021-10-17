@@ -30,6 +30,7 @@ public class Game {
     public DrawTexture drawTexture;
     public DrawFont mainFont;
     public DrawFont bigFont;
+    public DrawFont smallFont;
     public final Matrix4f ortho = new Matrix4f();
     public final Vector2f screenSize = new Vector2f();
     public final Vector2f gameScreenSize = new Vector2f();
@@ -103,21 +104,21 @@ public class Game {
         glfwSetWindowSizeCallback(window, (window1, width, height) -> {
             this.onWindowSize(width, height);
         });
+        playButton = new MenuButton(this, new Vector2f(0), new Vector2f(200, 100), "Button");
+        this.onWindowSize(800, 600);
 
         drawSimple = new DrawSimple();
         drawTexture = new DrawTexture();
         mainFont = new DrawFont("font.ttf", 32, 512, 512);
         bigFont = new DrawFont("font.ttf", 80, 1024, 512);
-        boardTexture = Texture.makeTexture("sprites/background_1_tmp.png");
+        boardTexture = Texture.makeTexture("sprites/background_2.png");
         enemyTexture = Texture.makeTexture("sprites/enemy_1.png");
 
         soundPlayer = new SoundPlayer();
 
         musicPlayer = new MusicPlayer(this);
-        playButton = new MenuButton(this, new Vector2f(0), new Vector2f(200, 100), "Button");
 
 
-        this.onWindowSize(800, 600);
 
         systems.put(State.MENU, new MenuSystem(this));
         systems.put(State.TUTORIAL, new TutorialSystem(this));
@@ -197,5 +198,6 @@ public class Game {
         }
         this.gameScreenSize.set(width, height);
         this.gameScreenCorner.set(screenSize.x / 2.0f - width / 2.0f, screenSize.y / 2.0f - height / 2.0f);
+        smallFont = new DrawFont("font.ttf", (int) (screenSize.y / 240.0f * 10.0f), 2048, 2048);
     }
 }

@@ -272,4 +272,42 @@ public class DrawFont {
     }
 
     public int getSize() { return size; }
+
+    public String cutOffStringBasedOnSize(String start, float size) {
+        StringBuilder builder = new StringBuilder();
+        StringBuilder currentLine = new StringBuilder();
+        StringBuilder nextLine = new StringBuilder();
+        float width;
+        int ci = 0;
+        while(ci < start.length()) {
+            String nextWord = getNextWord(start, ci);
+            ci += nextWord.length();
+            nextLine.append(nextWord);
+            width = textWidth(nextLine.toString());
+            if(width > size) {
+                builder.append(currentLine);
+                if(builder.toString().charAt(builder.length() - 1) != '\n') builder.append('\n');
+                currentLine = new StringBuilder();
+                nextLine = new StringBuilder();
+
+                currentLine.append(nextWord);
+                nextLine.append(nextWord);
+            } else {
+                currentLine.append(nextWord);
+            }
+        }
+        if(currentLine.length() > 0) {
+            builder.append(currentLine);
+        }
+        return builder.toString();
+    }
+
+    public String getNextWord(String str, int start) {
+        for(int i = start; i < str.length(); ++i) {
+            if(str.charAt(i) == ' ' || str.charAt(i) == '\n') {
+                return str.substring(start, i + 1);
+            }
+        }
+        return str.substring(start);
+    }
 }

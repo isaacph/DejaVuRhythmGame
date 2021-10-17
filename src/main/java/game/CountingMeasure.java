@@ -2,26 +2,23 @@ package game;
 
 import static org.lwjgl.glfw.GLFW.*;
 
-public class WaitMeasure implements MeasureInfo {
+public class CountingMeasure implements MeasureInfo {
 
     public String text;
+    public double length;
 
-    public WaitMeasure(Game game, String text) {
+    public CountingMeasure(Game game, String text, double length) {
         this.text = game.smallFont.cutOffStringBasedOnSize(text, 112 / 320.0f * game.screenSize.x);
+        this.length = length;
     }
 
     @Override
     public void measureStart(Game game, double measureStart) {
         game.musicPlayer.topText = this.text;
-        game.musicPlayer.waiting = true;
-        game.musicPlayer.currentMeasure = measureStart;
     }
 
     @Override
     public void measureUpdate(Game game) {
-        if(glfwGetKey(game.window, GLFW_KEY_SPACE) == GLFW_PRESS) {
-            game.musicPlayer.waiting = false;
-        }
     }
 
     @Override
@@ -31,6 +28,6 @@ public class WaitMeasure implements MeasureInfo {
 
     @Override
     public double getLength() {
-        return 0.0f;
+        return length;
     }
 }

@@ -6,13 +6,14 @@ public class GameplayMeasure implements MeasureInfo {
     public ArrayList<Note> noteInfo = new ArrayList<>();
     public ArrayList<String> startingSounds = new ArrayList<>();
     public int noteInfoPos = 0;
-    public int measureIndex = 0;
+    public double measureStartTime = 0;
 
     public GameplayMeasure() {}
 
     @Override
-    public void measureStart(Game game, int measureIndex) {
-        this.measureIndex = measureIndex;
+    public void measureStart(Game game, double measureStart) {
+        System.out.println("Start measure " + measureStart);
+        this.measureStartTime = measureStart;
         this.noteInfoPos = 0;
         for(String name : startingSounds) {
             game.soundPlayer.play(game.musicPlayer.sounds.get(name), (float) (4.0 / game.musicPlayer.bpm * 60));
@@ -25,10 +26,10 @@ public class GameplayMeasure implements MeasureInfo {
         while(added && noteInfoPos < noteInfo.size()) {
             added = false;
             Note note = noteInfo.get(noteInfoPos);
-            if(game.musicPlayer.currentMeasure >= measureIndex + note.timeInMeasure / 4.0f) {
+            if(game.musicPlayer.currentMeasure >= measureStartTime + note.timeInMeasure / 4.0f) {
                 game.musicPlayer.activeNotes.add(note);
-                game.musicPlayer.playMusicTime.put(note, measureIndex + note.timeInMeasure / 4.0f + 1);
-                System.out.println(measureIndex + note.timeInMeasure / 4.0f + 1);
+                game.musicPlayer.playMusicTime.put(note, (float) measureStartTime + note.timeInMeasure / 4.0f + note.hitTime);
+                System.out.println((float) measureStartTime + note.timeInMeasure / 4.0f + note.hitTime);
                 noteInfoPos++;
                 added = true;
             }
@@ -38,5 +39,10 @@ public class GameplayMeasure implements MeasureInfo {
     @Override
     public void measureEnd(Game game) {
 
+    }
+
+    @Override
+    public double getLength() {
+        return 1;
     }
 }

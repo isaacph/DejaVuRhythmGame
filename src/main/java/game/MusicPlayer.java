@@ -50,41 +50,27 @@ public class MusicPlayer {
     public static final int[] MELODY_NUMBERS = {1};
     public static final String[] RHYTHM_NAMES = {"A"};
 
-    public int counter = 0;
+    public static final double HIT_LENIENCY = 0.05;
+    public static final double HIT_GIVE_UP = 0.12;
+
+    public String topText = "";
 
     public SoundHandle hitSound;
 
+
+    public boolean waiting = false;
+
     public MusicPlayer(Game game) {
         this.game = game;
+
+        // load not positions
         notePosition = new HashMap<>();
-        for(int i = 0; i < notePos.length; ++i) {
+        for (int i = 0; i < notePos.length; ++i) {
             notePosition.put(i + 1, notePos[i]);
         }
 
-        {
-            WaitMeasure measure = new WaitMeasure();
-            measuresToPlay.add(measure);
-        }
-        {
-            GameplayMeasure measure = new GameplayMeasure();
-            measure.startingSounds.add("A");
-            measure.startingSounds.add("1A");
-            measure.noteInfo.add(new Note(0.0f, 4.0f, 1));
-            measure.noteInfo.add(new Note(1.0f, 4.0f, 3));
-            measure.noteInfo.add(new Note(2.0f, 4.0f, 5));
-            measure.noteInfo.add(new Note(3.0f, 4.0f, 7));
-            Collections.sort(measure.noteInfo);
-            measuresToPlay.add(measure);
-        }
-        {
-            GameplayMeasure measure = new GameplayMeasure();
-            measure.startingSounds.add("A");
-            measure.startingSounds.add("1A");
-            measuresToPlay.add(measure);
-        }
-
+        // load sounds
         hitSound = game.soundPlayer.loadSound("soundfx/clap.ogg");
-
         for(String rhythm : RHYTHM_NAMES) {
             sounds.put(rhythm, game.soundPlayer.loadSound("music/Rhythm_" + rhythm + ".ogg"));
             for(int melody : MELODY_NUMBERS) {
@@ -92,20 +78,24 @@ public class MusicPlayer {
             }
         }
 
-        currentMeasure = 0;
+        currentMeasure = -0.01f; // currentMeasure has to start less than 0
     }
 
     public void update() {
         if(!show) return;
 
-        int prevMeasure = MathUtil.roundDown(currentMeasure);
-        currentMeasure += game.delta * bpm / 60.0 / 4.0f;
-        int measureIndex = MathUtil.roundDown(currentMeasure);
+        int prevMeasure = getMeasure(currentMeasure);
+        if(!waiting) currentMeasure += game.delta * bpm / 60.0 / 4.0f;
+        int measureIndex = getMeasure(currentMeasure);
+//        System.out.println(prevMeasure + ", " + measureIndex + ": " + currentMeasure);
         for(int mI = Math.max(0, prevMeasure); mI <= Math.min(measuresToPlay.size() - 1, measureIndex); ++mI) {
             MeasureInfo measure = measuresToPlay.get(mI);
 
             if(mI > prevMeasure) {
-                measure.measureStart(game, mI);
+                measure.measureStart(game, getMeasureStart(mI));
+                if(waiting) {
+                    break;
+                }
             } else if(mI == measureIndex) {
                 measure.measureUpdate(game);
             } else { //if(mI < measureIndex) {
@@ -113,17 +103,32 @@ public class MusicPlayer {
             }
         }
 
+        while(!activeNotes.isEmpty()) {
+            double diff = (playMusicTime.get(activeNotes.get(0)) - currentMeasure) / bpm * 60.0;
+            if(diff < -HIT_GIVE_UP) {
+                activeNotes.remove(0);
+            } else break;
+        }
+
         if(glfwGetKey(game.window, GLFW_KEY_SPACE) == GLFW_PRESS) {
             if(!keyDown) {
                 if (!activeNotes.isEmpty()) {
-                    Note note = activeNotes.remove(0);
+                    Note note = activeNotes.get(0);
                     double diff = (playMusicTime.get(note) - currentMeasure) / bpm * 60.0;
-                    if (Math.abs(diff) < 0.05) {
-                        goodness = 2;
-                    } else {
-                        goodness = 1;
+                    if(diff > HIT_GIVE_UP) {
+                        goodness = 0;
                     }
-                    System.out.println("Hit note with diff " + diff);
+                    else if (Math.abs(diff) <= HIT_GIVE_UP && Math.abs(diff) > HIT_LENIENCY) {
+                        goodness = 1;
+                        activeNotes.remove(0);
+                    } else  if(Math.abs(diff) <= HIT_LENIENCY){
+                        goodness = 2;
+                        activeNotes.remove(0);
+                    } else {
+                        goodness = 0;
+                        activeNotes.remove(0);
+                    }
+                    System.out.println("Hit note with diff " + diff + " at time " + currentMeasure);
                     game.soundPlayer.play(hitSound, 0.1f);
                 }
             }
@@ -150,9 +155,37 @@ public class MusicPlayer {
 
         // draw goodness
         game.mainFont.draw("Test: " + goodness, 100, 100, new Matrix4f(game.ortho));
+        Vector2f topTextPos = new Vector2f(104, 39);
+        translateToScreen(topTextPos);
+        topTextPos.add(0, game.smallFont.getSize());
+//        game.drawSimple.draw(new Matrix4f(game.ortho).translate(topTextPos.x, topTextPos.y, 0).scale(10, 10, 0), new Vector4f(1, 0, 0, 1));
+        game.smallFont.draw(topText, topTextPos.x, topTextPos.y, new Matrix4f(game.ortho), new Vector4f(1.0f, 1.0f, 1.0f, 1.0f));
     }
 
     public void translateToScreen(Vector2f pos) {
-        pos.set(pos).div(640.0f, 480.0f).mul(game.gameScreenSize).add(game.gameScreenCorner);
+        pos.set(pos).div(320.0f, 240.0f).mul(game.gameScreenSize).add(game.gameScreenCorner);
+    }
+
+    // this is sloppy but I think it works
+    public int getMeasure(double measureTime) {
+        if(measureTime < 0) return -1;
+        double accountedFor = 0;
+        int measuresNum = 0;
+
+        while (measuresNum < measuresToPlay.size()) {
+            accountedFor += measuresToPlay.get(measuresNum).getLength();
+            if(accountedFor < measureTime && measuresNum < measuresToPlay.size()) measuresNum++;
+            else break;
+        }
+        if(measuresNum >= measuresToPlay.size()) return -1;
+        return measuresNum;
+    }
+
+    public double getMeasureStart(int measure) {
+        double time = 0;
+        for(int i = 0; i < measure; ++i) {
+            time += (measuresToPlay.get(i).getLength());
+        }
+        return time;
     }
 }
